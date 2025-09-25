@@ -1,0 +1,110 @@
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Processos - Dashboard Modular</title>
+      <link rel="stylesheet" href="Styles/main.css"/>
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+      
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    </head>
+    <body>
+      <div class="wrapper">
+        <header>
+          <h1>CRM</h1>
+          <div class="top-controls">
+            <div id="filtroEquipes" class="filtro-equipes">
+            </div>
+
+            <input
+              type="search"
+              id="buscaInput"
+              placeholder="Buscar por título ou responsável..."
+              autocomplete="off"
+              aria-label="Buscar processos"
+            />
+            
+            <button id="addProcessBtn" class="btn" title="Atalho: Ctrl + P">+ Adicionar processo</button>
+            <button id="addEquipeBtn" class="btn equipe-btn" title="Atalho: Ctrl + I">+ Equipe</button>
+          </div>
+        </header> 
+
+        <div id="listaProcessos"></div>
+      </div>
+
+      <div class="modal" id="modal">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="modal-head">
+            <h2 id="modalTitle">Editar Processo</h2>
+            <button class="close-x" id="closeModalBtn" aria-label="Fechar modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <label for="modalTituloInput">Nome</label>
+              <input type="text" id="modalTituloInput" required />
+            </div>
+
+            <div class="form-row">
+              <label for="modalResponsavelInput">Responsável</label>
+              <input type="text" id="modalResponsavelInput" />
+            </div>
+
+            <div class="form-row">
+              <label for="modalValorInput">Valor</label>
+              <input type="text" class="form-control" id="modalValorInput" name="valor" step="0.01" placeholder="R$ 0,00" />
+            </div>
+
+            <div class="form-row">
+              <label for="modalStatusInput">Status</label>
+              <select id="modalStatusInput">
+                <option value="pendente">Pendente</option>
+                <option value="analise">Em análise</option>
+                <option value="concluido">Concluído</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="modalPrioridadeInput">Prioridade</label>
+              <select id="modalPrioridadeInput"> 
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </div>
+            
+            <input type="hidden" id="modalEquipeHidden" value="" />
+
+            <div class="form-row" id="proximaEquipeContainer" style="display:none;">
+              <label for="modalProximaEquipeInput">Próxima Equipe</label>
+              <select id="modalProximaEquipeInput"></select>
+            </div>
+
+            <div class="form-row extras-container">
+              <label>Adicionar Dados</label>
+              <div id="extrasContainer"></div>
+              <button class="btn" id="addExtraFieldBtn"> Adicionar Novos </button>
+            </div>
+            
+          <div class="form-row" id="motivoRetrocessoContainer" style="display:none;">
+              <label for="motivoRetrocesso">Motivo do Retrocesso *</label>
+              <textarea id="motivoRetrocesso"></textarea>
+            </div>
+
+            <div class="modal-actions">
+              <button class="btn btn-danger" id="deleteProcessBtn ">Excluir</button>
+              
+              <button class="btn btn-retrocesso" id="retrocederBtn" title="Retroceder">
+                <i class="fas fa-undo"></i>
+              </button>
+              
+              <button class="btn" id="saveModalBtn">Salvar</button> 
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script type="module" src="JavaScript/main.js"></script>
+    </body>
+    </html>

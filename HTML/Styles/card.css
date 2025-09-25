@@ -1,0 +1,90 @@
+/* Card de processo */
+.card {
+  background: white;
+  border-radius: 6px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.2s ease;
+  position: relative;
+}
+
+.card:focus,
+.card:hover {
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.3);
+  outline: none;
+}
+
+.card h3 {
+  margin: 0 0 0.5rem 0;
+  color: #004a99;
+}
+
+.card p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+/* Badges de status */
+.badge.status {
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.badge.status.pendente {
+  background: #f1c40f;
+  color: #5d4a00;
+}
+
+.badge.status.analise {
+  background: #3498db;
+  color: white;
+}
+
+.badge.status.concluido {
+  background: #2ecc71;
+  color: white;
+}
+
+/* Prioridades */
+.priority.alta {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.priority.media {
+  color: #f39c12;
+}
+
+.priority.baixa {
+  color: #27ae60;
+}
+
+/* Extras no card */
+.extras-card {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #555;
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
+}
+
+.extra-item {
+  margin-bottom: 0.3rem;
+}
+
+.extra-item em {
+  font-style: italic;
+  color: #888;
+}
+
+/* Card com alerta - status especial */
+.card.alerta {
+  border: 2px solid #e74c3c;
+  background: #ffe6e6;
+}
