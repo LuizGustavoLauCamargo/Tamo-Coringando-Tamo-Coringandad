@@ -12,7 +12,10 @@ export function inicializarProcessos() {
 export function renderizarProcessos(processos, equipes, textoBusca = '', filtroEquipeId = '') {
     const listaProcessosContainer = document.getElementById('listaProcessos');
     if (!listaProcessosContainer) return;
-    
+
+ 
+
+
     listaProcessosContainer.innerHTML = '';
 
     const processosFiltrados = processos.filter(proc => {
@@ -97,3 +100,4 @@ export function ordenarProcessos(processos) {
         return prioridadeOrdem[a.prioridade] - prioridadeOrdem[b.prioridade];
     });
 }
+

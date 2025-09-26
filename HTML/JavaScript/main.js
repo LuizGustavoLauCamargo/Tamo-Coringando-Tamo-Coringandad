@@ -2,18 +2,20 @@ import { inicializarProcessos, renderizarProcessos, processos } from './processo
 import { inicializarEquipes, renderizarFiltroEquipes, equipes, adicionarEquipe } from './equipe.js';
 import { inicializarModal, abrirModalNovoProcesso } from './modal.js';
 
+
 document.addEventListener('DOMContentLoaded', () => {
     inicializarEquipes();
     inicializarProcessos();
     inicializarModal();
-    
+
+
     // Renderiza a lista inicial de processos e os botões de filtro
     renderizarFiltroEquipes(equipes);
     renderizarProcessos(processos, equipes);
 
     // Adiciona evento ao botão "Adicionar Processo"
     document.getElementById('addProcessBtn').addEventListener('click', () => {
-        const equipePadrao = equipes[0]?.id; 
+        const equipePadrao = equipes[0]?.id;
         abrirModalNovoProcesso(equipes, equipePadrao);
     });
 
@@ -47,4 +49,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtroEquipeId = btnAtivo?.dataset.id || '';
         renderizarProcessos(processos, equipes, termoBusca, filtroEquipeId);
     });
+
 });
+
+//função para o botão excluir
+export const buttonDelete = document.querySelectorAll(".btn-danger")
+  
+const cards = document.querySelectorAll(".modal-content")
+const modal  = document.querySelector('.modal')
+
+import { card } from './card.js';
+buttonDelete.forEach((botao)=>{
+    botao.addEventListener('click',()=>{
+        if(modal){
+          modal.style.display = "none"
+           card.remove()
+        }else{
+            modal.style.display="flex"
+        }
+       
+        
+    })
+})
