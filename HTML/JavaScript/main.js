@@ -1,73 +1,85 @@
-import { inicializarProcessos, renderizarProcessos, processos } from './processo.js';
+import { renderizarProcessos, processos, filtrarProcessos } from './processo.js';
 import { inicializarEquipes, renderizarFiltroEquipes, equipes, adicionarEquipe } from './equipe.js';
 import { inicializarModal, abrirModalNovoProcesso } from './modal.js';
+// import { criarCardProcesso } from './card.js'; // Não é necessário importar aqui, pois é usado dentro de renderizarProcessos
+import { carregarDados } from './storage.js';
 
+// Função placeholder para inicializar processos (apenas para organização)
+// A lógica real de renderização está dentro do DOMContentLoaded.
+function inicializarProcessos() {
+    // Geralmente, aqui você carregaria os dados iniciais do localStorage ou de uma API.
+    // Ex: const dadosCarregados = carregarDados(); 
+    // Seus dados já estão no array 'processos' (importado de processo.js)
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicialização da Lógica Principal
     inicializarEquipes();
-    inicializarProcessos();
-    inicializarModal();
-
+    inicializarProcessos(); // Chama a função placeholder acima
+    inicializarModal();     // Inicializa todos os listeners e elementos do modal
 
     // Renderiza a lista inicial de processos e os botões de filtro
-    renderizarFiltroEquipes(equipes);
+    renderizarFiltroEquipes(equipes);   
     renderizarProcessos(processos, equipes);
 
-    // Adiciona evento ao botão "Adicionar Processo"
-    document.getElementById('addProcessBtn').addEventListener('click', () => {
-        const equipePadrao = equipes[0]?.id;
-        abrirModalNovoProcesso(equipes, equipePadrao);
-    });
+    // --- Listeners de Ações Principais ---
 
-    // Adiciona evento ao botão "Adicionar Equipe"
-    document.getElementById('addEquipeBtn').addEventListener('click', () => {
-        const nome = prompt('Digite o nome da nova equipe:');
-        if (nome) {
-            adicionarEquipe(nome);
-            renderizarFiltroEquipes(equipes);
-            renderizarProcessos(processos, equipes);
-        }
-    });
+    // 1. Adiciona evento ao botão "Adicionar Processo"
+    const addProcessBtn = document.getElementById('addProcessBtn');
+    if (addProcessBtn) {
+        addProcessBtn.addEventListener('click', () => {
+            // Se houver uma equipe ativa no filtro, use-a como padrão
+            const btnAtivo = document.querySelector('.equipe-btn.ativo');
+            const equipePadrao = (btnAtivo?.dataset.id !== 'todos') ? btnAtivo?.dataset.id : equipes[0]?.id;
+            abrirModalNovoProcesso(equipes, equipePadrao);
+        });
+    }
 
-    // Gerencia o clique nos botões de filtro de equipe
-    document.getElementById('filtroEquipes').addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-filtro');
-        if (!btn) return;
+    // 2. Adiciona evento ao botão "Adicionar Equipe"
+    const addEquipeBtn = document.getElementById('addEquipeBtn');
+    if (addEquipeBtn) {
+        addEquipeBtn.addEventListener('click', () => {
+            const nome = prompt('Digite o nome da nova equipe:');
+            if (nome) {
+                adicionarEquipe(nome);
+                renderizarFiltroEquipes(equipes);
+                renderizarProcessos(processos, equipes);
+            }
+        });
+    }
 
-        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
-        btn.classList.add('ativo');
+    // 3. Gerencia o clique nos botões de filtro de equipe
+    const filtroEquipesContainer = document.getElementById('filtroEquipes');
+    if (filtroEquipesContainer) {
+        filtroEquipesContainer.addEventListener('click', (e) => {
+            // Note que eu mudei a busca de '.btn-filtro' para '.equipe-btn' para ser consistente com o HTML
+            const btn = e.target.closest('.equipe-btn'); 
+            if (!btn) return;
 
-        const filtroEquipeId = btn.dataset.id;
-        const termoBusca = document.getElementById('buscaInput').value;
-        renderizarProcessos(processos, equipes, termoBusca, filtroEquipeId);
-    });
+            document.querySelectorAll('.equipe-btn').forEach(b => b.classList.remove('ativo'));
+            btn.classList.add('ativo');
 
-    // Gerencia a busca em tempo real
-    document.getElementById('buscaInput').addEventListener('input', (e) => {
-        const termoBusca = e.target.value;
-        const btnAtivo = document.querySelector('.btn-filtro.ativo');
-        const filtroEquipeId = btnAtivo?.dataset.id || '';
-        renderizarProcessos(processos, equipes, termoBusca, filtroEquipeId);
-    });
+            const filtroEquipeId = btn.dataset.id;
+            const termoBusca = document.getElementById('buscaInput').value;
+            // Assumindo que 'filtrarProcessos' agora recebe todos os argumentos
+            // Você precisa implementar a função 'filtrarProcessos' no seu processo.js
+            filtrarProcessos(processos, equipes, termoBusca, filtroEquipeId);
+        });
+    }
+
+    // 4. Gerencia a busca em tempo real
+    const buscaInput = document.getElementById('buscaInput');
+    if (buscaInput) {
+        buscaInput.addEventListener('input', (e) => {
+            const termoBusca = e.target.value;
+            const btnAtivo = document.querySelector('.equipe-btn.ativo');
+            const filtroEquipeId = btnAtivo?.dataset.id || 'todos';
+            // Assumindo que 'filtrarProcessos' agora recebe todos os argumentos
+            filtrarProcessos(processos, equipes, termoBusca, filtroEquipeId);
+        });
+    }
 
 });
 
-//função para o botão excluir
-export const buttonDelete = document.querySelectorAll(".btn-danger")
-  
-const cards = document.querySelectorAll(".modal-content")
-const modal  = document.querySelector('.modal')
-
-import { card } from './card.js';
-buttonDelete.forEach((botao)=>{
-    botao.addEventListener('click',()=>{
-        if(modal){
-          modal.style.display = "none"
-           card.remove()
-        }else{
-            modal.style.display="flex"
-        }
-       
-        
-    })
-})
+// IMPORTANTE: O código problemático do botão de exclusão foi REMOVIDO daqui.
+// Ele deve estar no modal.js, dentro da função inicializarModal().

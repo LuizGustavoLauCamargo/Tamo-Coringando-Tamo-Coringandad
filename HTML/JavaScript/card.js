@@ -1,123 +1,108 @@
-
-
+// card.js
+// Importa a função para preencher e abrir o modal ao clicar no card.
 import { preencherModalComProcesso } from './modal.js';
- export const card = document.createElement('div');
-export function criarCardProcesso(proc, equipes = [], isCompactView = false) {
 
+/**
+ * Cria e retorna um elemento HTML (card) para um processo específico.
+ * * @param {Object} proc - O objeto de dados do processo.
+ * @param {Array<Object>} equipes - A lista completa de equipes.
+ * @param {boolean} isCompactView - Se deve renderizar em modo compacto.
+ * @param {function(string): Object} getEquipeById - Função auxiliar para obter o objeto equipe pelo ID (preferencial).
+ * @returns {HTMLElement} O elemento <div> do card do processo.
+ */
+export function criarCardProcesso(proc, equipes = [], isCompactView = false, getEquipeById) {
+    const card = document.createElement('div');
     card.className = 'card';
-
-    // Aplica as classes CSS de borda e prioridade
+    
+    // Aplica classes CSS de borda e estilo
     card.classList.add('process-card');
-    card.classList.add(`border-${proc.prioridade}`);
+    // Aplica a borda colorida baseada na prioridade (ex: border-alta)
+    card.classList.add(`border-${proc.prioridade}`); 
 
     if (isCompactView) {
         card.classList.add('card-compact');
     }
+    // Adiciona atributos de acessibilidade
     card.setAttribute('tabindex', '0');
     card.setAttribute('role', 'button');
-    if (proc.retrocessoMotivo) {
-        card.classList.add('alerta');
-    }
     
+    // Destaque se o processo sofreu retrocesso (usando a classe 'alerta')
+    if (proc.retrocessoMotivo) {
+        card.classList.add('alerta'); 
+    }
 
+    // Ação ao clicar no card: abre o modal para edição/visualização
     card.addEventListener('click', () => {
+        // Usa a função importada para preencher e exibir o modal
         preencherModalComProcesso(proc, equipes);
-
     });
-
+    
+    // 1. Título do Processo
     const titulo = document.createElement('h3');
     titulo.textContent = proc.titulo;
     card.appendChild(titulo);
 
-    // Oculta informações extras na visualização compacta
-    if (!isCompactView) {
-        const responsavel = document.createElement('p');
-        responsavel.innerHTML = `<strong>Responsável:</strong> ${proc.responsavel || '-'}`;
-        responsavel.className = 'card-responsavel';
-        card.appendChild(responsavel);
-
-        const equipeObj = Array.isArray(equipes) ? equipes.find(eq => eq.id.toString() === proc.equipeId.toString()) : null;
-        const nomeEquipe = equipeObj ? equipeObj.nome : 'Sem equipe';
-        const equipe = document.createElement('p');
-        equipe.innerHTML = `<strong>Equipe:</strong> ${nomeEquipe}`;
-        equipe.className = 'card-equipe';
-        card.appendChild(equipe);
+    // 2. Busca do Nome da Equipe
+    let nomeEquipe = 'Sem equipe';
+    
+    // Prioriza o uso da função auxiliar injetada (getEquipeById)
+    if (getEquipeById) {
+        const equipeObj = getEquipeById(proc.equipeId);
+        nomeEquipe = equipeObj ? equipeObj.nome : 'Sem equipe';
+    } else {
+        // Fallback: procura na lista completa de equipes passada
+        const equipeObj = Array.isArray(equipes) ? equipes.find(eq => String(eq.id) === String(proc.equipeId)) : null;
+        nomeEquipe = equipeObj ? equipeObj.nome : 'Sem equipe';
     }
 
+    // 3. Responsável e Equipe
+    const responsavel = document.createElement('p');
+    responsavel.innerHTML = `Responsável: <strong>${proc.responsavel || '-'}</strong>`;
+    card.appendChild(responsavel);
+    
+    const equipe = document.createElement('p');
+    equipe.innerHTML = `Equipe: <strong>${nomeEquipe}</strong>`;
+    card.appendChild(equipe);
 
+    // 4. Status e Prioridade (Container de sub-informações)
+    const subInfoDiv = document.createElement('div');
+    subInfoDiv.className = 'sub-info';
+
+    // Badge de Status (ex: badge status pendente)
+    const statusSpan = document.createElement('span');
+    statusSpan.className = `badge status ${proc.status}`;
+    statusSpan.textContent = proc.status.toUpperCase();
+    subInfoDiv.appendChild(statusSpan);
+
+    // Prioridade (ex: priority alta)
+    const prioridadeSpan = document.createElement('span');
+    prioridadeSpan.className = `priority ${proc.prioridade}`;
+    prioridadeSpan.innerHTML = `Prioridade: <strong>${proc.prioridade.toUpperCase()}</strong>`;
+    subInfoDiv.appendChild(prioridadeSpan);
+
+    card.appendChild(subInfoDiv);
+
+    // 5. Valor (Formatado em Reais - BRL)
     const valor = document.createElement('p');
-    valor.innerHTML = `<strong>Valor:</strong> R$ ${proc.valor ?? '0,00'}`;
-    valor.className = 'card-valor';
+    const valorFormatado = new Intl.NumberFormat('pt-BR', { 
+        style: 'currency', 
+        currency: 'BRL' 
+    }).format(parseFloat(proc.valor || 0));
+    valor.innerHTML = `Valor: <strong>${valorFormatado}</strong>`;
     card.appendChild(valor);
 
-    if (!isCompactView) {
-        const subInfoDiv = document.createElement('div');
-        subInfoDiv.className = 'sub-info';
-
-        const statusSpan = document.createElement('span');
-        statusSpan.className = `badge status ${proc.status}`;
-        statusSpan.textContent = proc.status;
-        subInfoDiv.appendChild(statusSpan);
-
-        const prioridadeSpan = document.createElement('span');
-        prioridadeSpan.className = `priority ${proc.prioridade}`;
-        prioridadeSpan.innerHTML = `<strong>Prioridade:</strong> ${proc.prioridade}`;
-        subInfoDiv.appendChild(prioridadeSpan);
-
-        card.appendChild(subInfoDiv);
-    }
-
+    // 6. Indicação de Retrocesso (se aplicável)
     if (proc.retrocessoMotivo) {
-        const retrocessoP = document.createElement('p');
-        retrocessoP.className = 'motivo-retrocesso';
-        retrocessoP.innerHTML = `<strong>Retrocedido:</strong> ${proc.retrocessoMotivo}`;
-        card.appendChild(retrocessoP);
+        const retrocesso = document.createElement('p');
+        retrocesso.className = 'text-alerta';
+        // Exibe uma prévia do motivo, limitada a 40 caracteres
+        const motivoCurto = proc.retrocessoMotivo.length > 40 
+                            ? proc.retrocessoMotivo.substring(0, 40) + '...'
+                            : proc.retrocessoMotivo;
+                            
+        retrocesso.innerHTML = `⚠️ Retrocedido: <em>${motivoCurto}</em>`;
+        card.appendChild(retrocesso);
     }
-
-    const extrasPreenchidos = (proc.extras || []).filter(extra => extra.nome.trim() || extra.valor.trim() || (extra.arquivos && extra.arquivos.length > 0));
-    if (extrasPreenchidos.length > 0 && !isCompactView) {
-        const extrasDiv = document.createElement('div');
-        extrasDiv.className = 'extras-card';
-
-        extrasPreenchidos.forEach(extra => {
-            const extraP = document.createElement('p');
-            extraP.innerHTML = `<strong>${extra.nome}:</strong> ${extra.valor || ''}`;
-            extrasDiv.appendChild(extraP);
-        });
-        card.appendChild(extrasDiv);
-    }
-
-    const todosOsArquivos = extrasPreenchidos.flatMap(extra => extra.arquivos || []);
-    if (todosOsArquivos.length > 0) {
-        const downloadBtn = document.createElement('button');
-        downloadBtn.className = 'btn download-btn';
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
-        downloadBtn.title = 'Baixar todos os anexos';
-
-        downloadBtn.addEventListener('click', async (e) => {
-            e.stopPropagation()
-            const zip = new JSZip();
-            todosOsArquivos.forEach((file, index) => {
-                zip.file(file.name, file);
-            });
-
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(zipBlob);
-            link.download = `${proc.titulo}_anexos.zip`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-        card.appendChild(downloadBtn);
-    }
-
-
-
-
 
     return card;
 }
-
-
-

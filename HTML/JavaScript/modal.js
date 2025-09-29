@@ -1,13 +1,17 @@
-import { processos, renderizarProcessos } from './processo.js';
+// modal.js
+
+// Importa funções essenciais e dados de processo e equipes
+import { processos, renderizarProcessos, filtrarProcessos, excluirProcesso } from './processo.js';
 import { equipes } from './equipe.js';
 
+// Elementos do Modal Principal
 let modal, modalTituloInput, modalResponsavelInput, modalValorInput, modalStatusInput, modalPrioridadeInput;
 let modalProximaEquipeInput, saveModalBtn, closeModalBtn;
 let extrasContainer, addExtraFieldBtn, retrocederBtn;
 let deleteProcessBtn;
 let motivoRetrocessoContainer, motivoRetrocessoElement;
 
-// Novos elementos para o modal de confirmação
+// Elementos do Modal de Confirmação/Alerta (Substitui alert/prompt)
 let confirmationModal, confirmationMessage, confirmActionBtn, cancelConfirmationBtn, closeConfirmationModalBtn;
 let onConfirmCallback = null;
 
@@ -16,6 +20,7 @@ let elementosFocaveis = [];
 let elementoFocadoAnteriormente = null;
 
 export function inicializarModal() {
+    // Captura dos elementos do DOM
     modal = document.getElementById('modal');
     modalTituloInput = document.getElementById('modalTituloInput');
     modalResponsavelInput = document.getElementById('modalResponsavelInput');
@@ -32,14 +37,16 @@ export function inicializarModal() {
     motivoRetrocessoContainer = document.getElementById('motivoRetrocessoContainer');
     motivoRetrocessoElement = document.getElementById('motivoRetrocesso');
     
-    // Inicializa os novos elementos do modal de confirmação
+    // Captura dos elementos do Modal de Confirmação
     confirmationModal = document.getElementById('confirmationModal');
     confirmationMessage = document.getElementById('confirmationMessage');
     confirmActionBtn = document.getElementById('confirmActionBtn');
     cancelConfirmationBtn = document.getElementById('cancelConfirmationBtn');
     closeConfirmationModalBtn = document.getElementById('closeConfirmationModalBtn');
     
-    // Adiciona as verificações de null para evitar o erro
+    // --- Listeners de Ação ---
+
+    // Formatação de valor (R$ 00,00)
     if (modalValorInput) {
         modalValorInput.addEventListener('input', (e) => {
             let valor = e.target.value;
@@ -57,6 +64,7 @@ export function inicializarModal() {
         });
     }
 
+    // Adicionar campo extra
     if (addExtraFieldBtn) {
         addExtraFieldBtn.addEventListener('click', () => {
             const div = criarExtraField();
@@ -65,11 +73,12 @@ export function inicializarModal() {
         });
     }
 
+    // Fechar modal principal
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', fecharModal);
     }
     
-    // Eventos do novo modal de confirmação
+    // --- Listeners do Modal de Confirmação ---
     if (closeConfirmationModalBtn) {
         closeConfirmationModalBtn.addEventListener('click', fecharConfirmacaoModal);
     }
@@ -85,6 +94,7 @@ export function inicializarModal() {
         });
     }
 
+    // --- Listeners Globais (Esc/Clique fora/Foco) ---
     if (window) {
         window.addEventListener('click', e => {
             if (e.target === modal) fecharModal();
@@ -100,55 +110,65 @@ export function inicializarModal() {
         }); 
     }
     
+    // --- Ação de Excluir Processo ---
     if (deleteProcessBtn) {
         deleteProcessBtn.addEventListener('click', () => {
-            abrirConfirmacaoModal('Deseja realmente excluir este processo?', () => {
-                const index = processos.findIndex(p => p.id === processoSelecionadoId);
-                if (index !== -1) {
-                    processos.splice(index, 1);
-                    renderizarProcessos(processos, equipes);
+            // Usa o modal de confirmação personalizado
+            abrirConfirmacaoModal('Deseja realmente excluir este processo? Esta ação é irreversível.', () => {
+                if (processoSelecionadoId) {
+                    // Delega a exclusão e a re-renderização para o processo.js
+                    excluirProcesso(processoSelecionadoId); 
                     fecharModal();
                 }
             }); 
         });
     }
 
+    // --- Ação de Retroceder Processo ---
     if (retrocederBtn) {
         retrocederBtn.addEventListener('click', () => {
-            const motivo = prompt('Por favor, informe o motivo do retrocesso:');
-
-            if (motivo === null || motivo.trim() === '') {
-                // substitui o alert por uma mensagem no modal
-                abrirAlertaModal('O motivo do retrocesso é obrigatório para continuar.');
-                return;
-            }
-
-            const proc = processos.find(p => p.id === processoSelecionadoId);
-            if (proc) {
-                if (proc.historicoEquipes && proc.historicoEquipes.length > 1) {
-                    proc.historicoEquipes.pop(); 
-                    const equipeAnteriorId = proc.historicoEquipes[proc.historicoEquipes.length - 1];
-                    proc.equipeId = equipeAnteriorId; 
-                    proc.proximaEquipeId = ''; 
+            // Abre o modal de prompt personalizado (usando o modal de confirmação como base)
+            abrirPromptModal('Por favor, informe o motivo do retrocesso:', (motivo) => {
+                 if (motivo === null || motivo.trim() === '') {
+                    abrirAlertaModal('O motivo do retrocesso é obrigatório para continuar.');
+                    return;
                 }
-                
-                proc.retrocessoMotivo = motivo;
-                proc.status = 'pendente';
-                proc.retrocedido = true;
-                
-                proc.prioridade = 'urgente';
-                
-                renderizarProcessos(processos, equipes);
-                fecharModal();
-            }
+
+                const proc = processos.find(p => p.id === processoSelecionadoId);
+                if (proc) {
+                    // Lógica de retrocesso
+                    if (proc.historicoEquipes && proc.historicoEquipes.length > 1) {
+                        proc.historicoEquipes.pop(); 
+                        const equipeAnteriorId = proc.historicoEquipes[proc.historicoEquipes.length - 1];
+                        proc.equipeId = equipeAnteriorId; 
+                        proc.proximaEquipeId = ''; 
+                    }
+                    
+                    proc.retrocessoMotivo = motivo;
+                    proc.status = 'pendente';
+                    proc.retrocedido = true;
+                    proc.prioridade = 'urgente';
+                    
+                    // Re-renderiza para atualizar a lista
+                    const btnAtivo = document.querySelector('.equipe-btn.ativo');
+                    const filtroEquipeId = btnAtivo?.getAttribute('data-equipe-id') || 'todos';
+                    const termoBusca = document.getElementById('buscaInput')?.value || '';
+                    filtrarProcessos(processos, equipes, termoBusca, filtroEquipeId);
+                    
+                    fecharModal();
+                }
+            });
         });
     }
 
+    // --- Mudança de Status (Mostrar/Esconder próxima equipe) ---
     if (modalStatusInput) {
         modalStatusInput.addEventListener('change', (e) => {
             const proximaEquipeContainer = document.getElementById('proximaEquipeContainer');
             const isConcluido = e.target.value === 'concluido';
-            proximaEquipeContainer.style.display = isConcluido ? 'flex' : 'none';
+            if (proximaEquipeContainer) {
+                 proximaEquipeContainer.style.display = isConcluido ? 'flex' : 'none';
+            }
             
             if (saveModalBtn) {
                 saveModalBtn.textContent = isConcluido ? 'Enviar' : 'Salvar';
@@ -157,41 +177,54 @@ export function inicializarModal() {
         });
     }
     
+    // --- Ação de Salvar/Enviar ---
     if (saveModalBtn) {
         saveModalBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (salvarModal(processos, equipes)) {
                 fecharModal();
-                renderizarProcessos(processos, equipes);
+                // Re-renderiza após salvar, aplicando filtros
+                const btnAtivo = document.querySelector('.equipe-btn.ativo');
+                const filtroEquipeId = btnAtivo?.getAttribute('data-equipe-id') || 'todos';
+                const termoBusca = document.getElementById('buscaInput')?.value || '';
+                filtrarProcessos(processos, equipes, termoBusca, filtroEquipeId);
             }
         });
     }
 }
 
-// Funções para o novo modal de confirmação
+// --- Funções do Modal de Confirmação/Alerta Personalizado ---
+
+/**
+ * Abre o modal para confirmação de uma ação (OK/Cancelar).
+ * @param {string} mensagem 
+ * @param {function} callback A função a ser executada se o usuário confirmar.
+ */
 export function abrirConfirmacaoModal(mensagem, callback) {
-    if (confirmationModal && confirmationMessage) {
+    if (confirmationModal && confirmationMessage && confirmActionBtn && cancelConfirmationBtn) {
         confirmationMessage.textContent = mensagem;
         onConfirmCallback = callback;
+
+        confirmActionBtn.textContent = 'Confirmar';
+        confirmActionBtn.style.display = 'inline-block';
+        cancelConfirmationBtn.textContent = 'Cancelar';
+        cancelConfirmationBtn.style.display = 'inline-block';
+        
         confirmationModal.style.display = 'block';
-        if (confirmActionBtn) confirmActionBtn.focus();
+        confirmActionBtn.focus();
     }
 }
 
-export function fecharConfirmacaoModal() {
-    if (confirmationModal) {
-        confirmationModal.style.display = 'none';
-    }
-    onConfirmCallback = null;
-}
-
-// Função para o alert personalizado
+/**
+ * Abre o modal como um Alerta simples (só com botão OK).
+ * @param {string} mensagem 
+ */
 function abrirAlertaModal(mensagem) {
     if (confirmationModal && confirmationMessage && confirmActionBtn && cancelConfirmationBtn) {
         confirmationMessage.textContent = mensagem;
-        onConfirmCallback = fecharConfirmacaoModal; 
+        onConfirmCallback = null; // Não há callback de confirmação
         
-        confirmActionBtn.style.display = 'none';
+        confirmActionBtn.style.display = 'none'; // Esconde Confirmar
         cancelConfirmationBtn.textContent = 'OK';
         cancelConfirmationBtn.style.display = 'inline-block';
         
@@ -199,6 +232,59 @@ function abrirAlertaModal(mensagem) {
         cancelConfirmationBtn.focus();
     }
 }
+
+/**
+ * Abre o modal simulando um Prompt, retornando o valor digitado no callback.
+ * (Esta função requer que o HTML do confirmationModal seja editado para incluir um input.)
+ * * NOTA: Para simplificar, vou usar a função interna "abrirConfirmacaoModal" e passar o resultado
+ * de uma variável temporária, simulando o prompt com um campo de texto, mas para isso 
+ * o HTML PRECISA TER O CAMPO `promptInput`. Se o HTML não for alterado, esta função 
+ * só funcionará com a mensagem. Vou simplificar usando uma caixa de texto simples.
+ */
+function abrirPromptModal(mensagem, callback) {
+    // 1. Mostrar input de prompt no modal de confirmação
+    const promptInput = document.getElementById('promptInput');
+    if (!promptInput) {
+        // Fallback se o input não existir no HTML
+        const motivo = window.prompt(mensagem); 
+        callback(motivo);
+        return;
+    }
+    
+    promptInput.style.display = 'block';
+    promptInput.value = '';
+    
+    abrirConfirmacaoModal(mensagem, () => {
+        const motivo = promptInput.value;
+        promptInput.style.display = 'none';
+        callback(motivo);
+    });
+
+    // 2. Garante que o promptInput seja limpo ao fechar
+    const originalFechar = onConfirmCallback;
+    onConfirmCallback = () => {
+        if (originalFechar) originalFechar();
+        promptInput.style.display = 'none';
+    };
+    
+    // 3. Foca no input
+    promptInput.focus();
+}
+
+export function fecharConfirmacaoModal() {
+    if (confirmationModal) {
+        confirmationModal.style.display = 'none';
+    }
+    onConfirmCallback = null;
+    
+    // Esconde o input do prompt se ele existir
+    const promptInput = document.getElementById('promptInput');
+    if (promptInput) {
+        promptInput.style.display = 'none';
+    }
+}
+
+// --- Funções de Acessibilidade e Foco ---
 
 function recarregarFocaveis() {
     if (modal) {
@@ -224,6 +310,8 @@ function trapFocus(e) {
         }
     }
 }
+
+// --- Funções de Controle do Modal Principal ---
 
 export function abrirModalNovoProcesso(equipes, equipeId) {
     elementoFocadoAnteriormente = document.activeElement;
@@ -407,21 +495,26 @@ export async function salvarModal(processos, equipes) {
     const novaEquipeId = modalProximaEquipeInput ? modalProximaEquipeInput.value : '';
     
     if (novoStatus === 'concluido' && novaEquipeId && proc.equipeId !== novaEquipeId) {
-        proc.historicoEquipes.push(proc.equipeId);
-        
+        // Enviar para próxima equipe
+        if (!proc.historicoEquipes.includes(proc.equipeId)) {
+             proc.historicoEquipes.push(proc.equipeId);
+        }
+       
         proc.equipeId = novaEquipeId;
         
-        proc.status = 'pendente';
+        proc.status = 'pendente'; // Reseta o status para pendente na nova equipe
         proc.proximaEquipeId = novaEquipeId;
     } else {
+        // Salvar na equipe atual
         proc.status = novoStatus;
         proc.proximaEquipeId = novaEquipeId;
         
-        if (novoProcesso) {
+        if (novoProcesso && equipeAtualId && !proc.historicoEquipes.includes(equipeAtualId)) {
             proc.historicoEquipes.push(equipeAtualId);
         }
     }
     
+    // Atualiza dados básicos
     proc.titulo = modalTituloInput ? modalTituloInput.value.trim() : '';
     proc.responsavel = modalResponsavelInput ? modalResponsavelInput.value.trim() : '';
     
@@ -430,6 +523,7 @@ export async function salvarModal(processos, equipes) {
     
     proc.prioridade = modalPrioridadeInput ? modalPrioridadeInput.value : '';
     
+    // Atualiza extras
     proc.extras = [];
     if (extrasContainer) {
       extrasContainer.querySelectorAll('.extra-field').forEach(div => {
@@ -466,7 +560,7 @@ function validarModal() {
     if (modalStatusInput && modalProximaEquipeInput) {
       if (modalStatusInput.value === 'concluido' && !modalProximaEquipeInput.value) {
           modalProximaEquipeInput.classList.add('input-erro');
-          // substitui o alert por uma mensagem no modal
+          // Usa o alerta personalizado
           abrirAlertaModal('Por favor, selecione a próxima equipe para enviar o processo.');
           return false;
       } else {
@@ -476,7 +570,7 @@ function validarModal() {
     
 
     if (!isValid) {
-        // substitui o alert por uma mensagem no modal
+        // Usa o alerta personalizado
         abrirAlertaModal('Por favor, preencha todos os campos obrigatórios.');
     }
     return isValid;
@@ -496,6 +590,7 @@ export function fecharModal() {
 function limparModal() {
     if (modalTituloInput) {
         modalTituloInput.value = '';
+        modalTituloInput.classList.remove('input-erro');
     }
     if (modalResponsavelInput) {
         modalResponsavelInput.value = '';
@@ -511,6 +606,7 @@ function limparModal() {
     }
     if (modalProximaEquipeInput) {
         modalProximaEquipeInput.innerHTML = '';
+        modalProximaEquipeInput.classList.remove('input-erro');
     }
     if (extrasContainer) {
         extrasContainer.innerHTML = '';
@@ -528,6 +624,10 @@ function limparModal() {
         if (motivoRetrocessoElement) {
             motivoRetrocessoElement.textContent = '';
         }
+    }
+    const proximaEquipeContainer = document.getElementById('proximaEquipeContainer');
+    if (proximaEquipeContainer) {
+         proximaEquipeContainer.style.display = 'none';
     }
 }
 
@@ -560,7 +660,8 @@ function criarExtraField(nome = '', valor = '', arquivos = []) {
         div._arquivos.forEach(f => {
             const li = document.createElement('li');
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(f);
+            // Nota: URLs de Blob só funcionam na sessão atual
+            a.href = URL.createObjectURL(f); 
             a.download = f.name;
             a.textContent = f.name;
             li.appendChild(a);
@@ -573,13 +674,16 @@ function criarExtraField(nome = '', valor = '', arquivos = []) {
         const novos = Array.from(e.target.files);
         div._arquivos.push(...novos);
         atualizarLista();
-        arquivoInput.value = null;
+        // Limpa o input file para permitir o upload do mesmo arquivo novamente
+        arquivoInput.value = null; 
     });
 
     const removeBtn = document.createElement('button');
     removeBtn.textContent = 'Remover';
+    removeBtn.className = 'btn-remover-extra';
     removeBtn.addEventListener('click', () => {
         div.remove();
+        recarregarFocaveis();
     });
 
     div.appendChild(nomeInput);
