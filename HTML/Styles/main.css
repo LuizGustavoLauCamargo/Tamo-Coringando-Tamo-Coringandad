@@ -473,6 +473,12 @@ textarea {
 .card-compact .motivo-retrocesso {
     display: none;
 }
+.sub-info{ /*Aqui coloquei um espaçamento entre os itens*/
+    display: flex;
+    flex-flow: row wrap;
+    gap: 8px;
+    margin: 10px;
+}
 
 .card-compact h3 {
     margin: 0;

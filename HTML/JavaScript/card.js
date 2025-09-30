@@ -1,6 +1,6 @@
 // card.js
 // Importa a função para preencher e abrir o modal ao clicar no card.
-import { preencherModalComProcesso } from './modal.js';
+import { deleteProcessBtn, preencherModalComProcesso } from './modal.js';
 
 /**
  * Cria e retorna um elemento HTML (card) para um processo específico.
@@ -16,7 +16,9 @@ export function criarCardProcesso(proc, equipes = [], isCompactView = false, get
     
     // Aplica classes CSS de borda e estilo
     card.classList.add('process-card');
-    // Aplica a borda colorida baseada na prioridade (ex: border-alta)
+
+  
+    // Aplica a borda colordia baseada na prioridade (ex: border-alta)
     card.classList.add(`border-${proc.prioridade}`); 
 
     if (isCompactView) {

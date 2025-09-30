@@ -6,9 +6,15 @@
     <title>Processos - Dashboard Modular</title>
     <!-- Incluindo a fonte Inter -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
-    <link rel="stylesheet" href="Styles/main.css"/>
+    <link rel="stylesheet" href="Styles/main.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="Styles/base.css">
+    <link rel="stylesheet" href="Styles/card.css">
+    <link rel="stylesheet" href="Styles/layout.css">
+    <link rel="stylesheet" href="Styles/main.css">
+    <link rel="stylesheet" href="Styles/modal.css">
 </head>
+
 <body>
     <div class="wrapper">
         <header>
@@ -17,24 +23,19 @@
                 <div id="filtroEquipes" class="filtro-equipes">
                     <!-- Botões de equipe serão injetados aqui -->
                 </div>
-                
+
                 <!-- Novo Botão de Alternância de Visualização -->
                 <button id="toggleViewBtn" class="btn" title="Alternar entre Lista e Kanban">
                     <i class="fas fa-th-list"></i> Lista
                 </button>
 
-                <input
-                    type="search"
-                    id="buscaInput"
-                    placeholder="Buscar por título ou responsável..."
-                    autocomplete="off"
-                    aria-label="Buscar processos"
-                />
-                
+                <input type="search" id="buscaInput" placeholder="Buscar por título ou responsável..."
+                    autocomplete="off" aria-label="Buscar processos" />
+
                 <button id="addProcessBtn" class="btn" title="Atalho: Ctrl + P">+ Adicionar processo</button>
                 <button id="addEquipeBtn" class="btn equipe-btn" title="Atalho: Ctrl + I">+ Equipe</button>
             </div>
-        </header> 
+        </header>
 
         <!-- O container terá a classe 'kanban-view' ou será uma lista simples -->
         <div id="listaProcessos"></div>
@@ -63,7 +64,8 @@
                     <div class="form-row">
                         <label for="modalValorInput">Valor</label>
                         <!-- Ajustei o type para text e incluí a formatação JS -->
-                        <input type="text" class="form-control" id="modalValorInput" name="valor" placeholder="R$ 0,00" />
+                        <input type="text" class="form-control" id="modalValorInput" name="valor"
+                            placeholder="R$ 0,00" />
                     </div>
 
                     <div class="form-row">
@@ -77,14 +79,14 @@
 
                     <div class="form-row">
                         <label for="modalPrioridadeInput">Prioridade</label>
-                        <select id="modalPrioridadeInput"> 
+                        <select id="modalPrioridadeInput">
                             <option value="urgente">Urgente</option>
                             <option value="alta">Alta</option>
                             <option value="media">Média</option>
                             <option value="baixa">Baixa</option>
                         </select>
                     </div>
-                    
+
                     <input type="hidden" id="modalEquipeHidden" value="" />
 
                     <div class="form-row" id="proximaEquipeContainer" style="display:none;">
@@ -97,15 +99,16 @@
                         <div id="extrasContainer"></div>
                         <button type="button" class="btn" id="addExtraFieldBtn"> Adicionar Novo Campo </button>
                     </div>
-                    
+
                     <div class="modal-actions">
                         <button type="button" class="btn btn-danger" id="deleteProcessBtn">Excluir</button>
-                        
-                        <button type="button" class="btn btn-retrocesso" id="retrocederBtn" title="Retroceder" style="display:none;">
+
+                        <button type="button" class="btn btn-retrocesso" id="retrocederBtn" title="Retroceder"
+                            style="display:none;">
                             <i class="fas fa-undo"></i> Retroceder
                         </button>
-                        
-                        <button type="submit" class="btn" id="saveModalBtn">Salvar</button> 
+
+                        <button type="submit" class="btn" id="saveModalBtn">Salvar</button>
                     </div>
                 </form>
             </div>
@@ -114,15 +117,18 @@
 
     <!-- Modal de Retrocesso (Confirm é mais simples, mas o CSS sugere este) -->
     <div id="retrocessoModal" class="modal">
-        <div class="modal-content modal-content-retrocesso" role="alertdialog" aria-modal="true" aria-labelledby="retrocessoTitle">
+        <div class="modal-content modal-content-retrocesso" role="alertdialog" aria-modal="true"
+            aria-labelledby="retrocessoTitle">
             <div class="modal-head">
-                 <h3 id="retrocessoTitle">Motivo do Retrocesso</h3>
-                 <button class="close-x" id="closeRetrocessoModalBtn" aria-label="Fechar Retrocesso">&times;</button>
+                <h3 id="retrocessoTitle">Motivo do Retrocesso</h3>
+                <button class="close-x" id="closeRetrocessoModalBtn" aria-label="Fechar Retrocesso">&times;</button>
             </div>
-            
+
             <div class="form-row">
-                <label for="motivoRetrocessoInput">O processo será movido para a equipe anterior no status Pendente.</label>
-                <textarea id="motivoRetrocessoInput" placeholder="Descreva o motivo pelo qual o processo está sendo retrocedido (obrigatório)."></textarea>
+                <label for="motivoRetrocessoInput">O processo será movido para a equipe anterior no status
+                    Pendente.</label>
+                <textarea id="motivoRetrocessoInput"
+                    placeholder="Descreva o motivo pelo qual o processo está sendo retrocedido (obrigatório)."></textarea>
             </div>
 
             <div class="modal-actions">
@@ -135,4 +141,5 @@
     <!-- Referencia o arquivo principal de JS -->
     <script type="module" src="JavaScript/main.js"></script>
 </body>
+
 </html>
