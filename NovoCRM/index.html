@@ -1,169 +1,185 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Processos Kanban</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="CSS/main.css">
-</head>
-<body class="p-4 sm:p-8">
-    <div class="max-w-7xl mx-auto">
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kanban Simples Modular</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="./CSS/main.css">
         
-        <header class="mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Processos da Empresa</h1>
-            <p class="text-gray-600">Gerencie e filtre os processos entre as equipes.</p>
+    </head>
+
+    <body class="font-sans">
+        
+        <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-3xl font-extrabold text-gray-900">Kanban Board</h1>
+                <div class="flex space-x-3">
+                    <button id="gerenciarEquipesBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-150">
+                        Gerenciar Equipes
+                    </button>
+                    <button id="novoProcessoBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150">
+                        + Novo Processo
+                    </button>
+                </div>
+            </div>
         </header>
 
-        <div class="flex flex-col md:flex-row gap-4 mb-6">
-            <input type="text" id="buscaInput" placeholder="Buscar por título, responsável ou motivo de retrocesso..." class="flex-grow p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <button id="gerenciarEquipesBtn" class="bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl shadow-sm hover:bg-gray-300 transition duration-300 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM10 9a3 3 0 00-3 3v2a2 2 0 002 2h2a2 2 0 002-2v-2a3 3 0 00-3-3zM5 14a2 2 0 01-2-2v-2a5 5 0 015-5h4a5 5 0 015 5v2a2 2 0 01-2 2H5z"/></svg>
-                Gerenciar Equipes
-            </button>
-            <button id="novoProcessoBtn" class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition duration-300 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                Novo Processo
-            </button>
-        </div>
-
-        <div id="equipesFiltroContainer" class="flex flex-wrap gap-3 mb-8 pb-4 overflow-x-auto">
-            </div>
-
-        <div id="processosContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            </div>
-    </div>
-    
-    <div id="modalProcesso" class="modal-overlay">
-        <div class="modal-content p-6">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 id="modalProcessoTitle" class="text-2xl font-bold text-gray-800">Novo Processo</h2>
-                <button id="closeModalProcessoBtn" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded-full bg-gray-50 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
+        <main class="max-w-7xl mx-auto p-6">
+            <div class="flex items-center space-x-4 mb-6">
+                <input type="text" id="buscaInput" placeholder="Buscar por título, responsável ou motivo..." 
+                    class="flex-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
             </div>
             
-            <form id="modalProcessoForm" class="space-y-4">
-                <input type="hidden" id="modalEquipeHidden" value="">
-                
-                <div>
-                    <label for="modalTituloInput" class="block text-sm font-medium text-gray-700">Título do Processo <span class="text-red-500">*</span></label>
-                    <input type="text" id="modalTituloInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5">
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="modalResponsavelInput" class="block text-sm font-medium text-gray-700">Responsável</label>
-                        <input type="text" id="modalResponsavelInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5">
-                    </div>
-                    <div>
-                        <label for="modalValorInput" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                        <input type="text" id="modalValorInput" placeholder="0,00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5">
-                    </div>
+            <div id="equipesFiltroContainer" class="flex flex-wrap gap-2 mb-8">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="modalStatusInput" class="block text-sm font-medium text-gray-700">Status</label>
-                        <select id="modalStatusInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 bg-white">
-                            <option value="pendente">Pendente</option>
-                            <option value="em_andamento">Em Andamento</option>
-                            <option value="concluido">Concluído</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="modalPrioridadeInput" class="block text-sm font-medium text-gray-700">Prioridade</label>
-                        <select id="modalPrioridadeInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 bg-white"></select>
-                    </div>
+            <div id="processosContainer" class="flex space-x-6 min-h-[500px]">
+                </div>
+        </main>
+
+        
+        <div id="modalProcesso" class="modal-overlay hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl transform scale-100 transition-all">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h2 id="modalProcessoTitle" class="text-2xl font-bold text-gray-900">Novo Processo</h2>
+                    <button id="closeModalProcessoBtn" class="text-gray-400 hover:text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
                 
-                <div id="motivoRetrocessoContainer" class="bg-red-50 border-l-4 border-red-400 p-4 rounded-md hidden flex-col">
-                    <p class="font-bold text-red-800 mb-1">Processo Retrocedido:</p>
-                    <p id="motivoRetrocesso" class="text-sm text-red-700 italic"></p>
+                <form id="modalProcessoForm" class="space-y-4">
+                    <input type="hidden" id="modalEquipeHidden" value="">
+
+                    <div>
+                        <label for="modalTituloInput" class="block text-sm font-medium text-gray-700">Título do Processo <span class="text-red-500">*</span></label>
+                        <input type="text" id="modalTituloInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label for="modalResponsavelInput" class="block text-sm font-medium text-gray-700">Responsável</label>
+                            <input type="text" id="modalResponsavelInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        </div>
+                        <div class="flex-1">
+                            <label for="modalValorInput" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                            <input type="text" id="modalValorInput" placeholder="0,00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-right">
+                        </div>
+                    </div>
+
+                    <div id="motivoRetrocessoContainer" class="hidden p-3 bg-red-100 border-l-4 border-red-500 rounded-md">
+                        <p class="text-sm font-semibold text-red-800">Retrocedido por:</p>
+                        <p id="motivoRetrocesso" class="text-sm text-red-700 mt-1"></p>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label for="modalStatusInput" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
+                            <select id="modalStatusInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white">
+                                <option value="pendente">Pendente</option>
+                                <option value="em_andamento">Em Andamento</option>
+                                <option value="concluido">Concluído (Próxima Equipe)</option>
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <label for="modalPrioridadeInput" class="block text-sm font-medium text-gray-700">Prioridade</label>
+                            <select id="modalPrioridadeInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white">
+                                </select>
+                        </div>
+                    </div>
+
+                    <div id="proximaEquipeContainer" class="hidden flex-1 mt-4">
+                        <label for="modalProximaEquipeInput" class="block text-sm font-medium text-gray-700">Próxima Equipe (Obrigatório se "Concluído")</label>
+                        <select id="modalProximaEquipeInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white">
+                            </select>
+                    </div>
+
+                    <div class="pt-4 border-t">
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Campos Extras (Opcional)</h4>
+                        <div id="extrasContainer" class="space-y-2">
+                            </div>
+                        <button type="button" id="addExtraFieldBtn" class="mt-3 text-sm text-indigo-600 hover:text-indigo-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                            Adicionar Campo
+                        </button>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-6 border-t mt-6">
+                        <div>
+                            <button type="button" id="deleteProcessBtn" class="text-sm font-semibold text-red-600 hover:text-red-800 mr-4 hidden">
+                                Excluir Processo
+                            </button>
+                            <button type="button" id="retrocederBtn" class="text-sm font-semibold text-orange-600 hover:text-orange-800 hidden">
+                                Retroceder
+                            </button>
+                        </div>
+                        
+                        <button type="submit" id="saveModalProcessoBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">
+                            Salvar Processo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <div id="confirmationModal" class="modal-overlay hidden">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+                <p id="confirmationMessage" class="text-lg font-medium text-gray-700 mb-6"></p>
+                
+                <input type="text" id="promptInput" placeholder="Digite o motivo aqui..." class="hidden w-full p-2 border border-gray-300 rounded-md mb-4">
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="cancelConfirmationBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-150">
+                        Cancelar
+                    </button>
+                    <button id="confirmActionBtn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-150">
+                        Confirmar
+                    </button>
+                    <button id="closeConfirmationModalBtn" class="hidden"></button> </div>
+            </div>
+        </div>
+
+        <div id="modalEquipe" class="modal-overlay hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-xl transform scale-100 transition-all">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Gerenciar Equipes</h2>
+                    <button id="closeModalEquipeBtn" class="text-gray-400 hover:text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
 
-                <div id="proximaEquipeContainer" class="hidden flex-col">
-                    <label for="modalProximaEquipeInput" class="block text-sm font-bold text-gray-700">Enviar para Próxima Equipe</label>
-                    <select id="modalProximaEquipeInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 bg-white"></select>
-                    <p class="text-xs text-gray-500 mt-1">Se o status for "Concluído", você deve selecionar a próxima equipe para enviar este processo.</p>
-                </div>
+                <form id="addEquipeForm" class="space-y-3 mb-6 p-4 border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-800">Adicionar Nova Equipe</h3>
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label for="novaEquipeNome" class="block text-xs font-medium text-gray-600">Nome <span class="text-red-500">*</span></label>
+                            <input type="text" id="novaEquipeNome" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm">
+                        </div>
+                        <div class="w-1/4">
+                            <label for="novaEquipeId" class="block text-xs font-medium text-gray-600">ID Curto <span class="text-red-500">*</span></label>
+                            <input type="text" id="novaEquipeId" required maxlength="10" placeholder="ex: dev" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm">
+                        </div>
+                        <div class="w-1/6">
+                            <label for="novaEquipeCor" class="block text-xs font-medium text-gray-600">Cor</label>
+                            <input type="color" id="novaEquipeCor" value="#3b82f6" class="mt-1 block w-full h-9 rounded-md border-gray-300 shadow-sm p-1">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-150">
+                        Adicionar Equipe
+                    </button>
+                </form>
 
                 <div class="border-t pt-4">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Detalhes Extras</h3>
-                    <div id="extrasContainer" class="space-y-2"></div>
-                    <button type="button" id="addExtraFieldBtn" class="text-sm text-indigo-600 hover:text-indigo-800 mt-2 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                        Adicionar Campo
-                    </button>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Equipes Existentes</h3>
+                    <div id="listaEquipesContainer" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                        </div>
                 </div>
-
-                <div class="flex justify-end pt-4 space-x-3 border-t">
-                    <button type="button" id="retrocederBtn" class="bg-red-100 text-red-700 font-semibold py-2 px-4 rounded-xl hover:bg-red-200 transition duration-300 flex items-center" style="display:none;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
-                        Retroceder
-                    </button>
-                    <button type="button" id="deleteProcessBtn" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-xl hover:bg-gray-300 transition duration-300">
-                        Excluir
-                    </button>
-                    <button type="submit" id="saveModalProcessoBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md hover:bg-indigo-700 transition duration-300">
-                        Salvar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <div id="modalEquipe" class="modal-overlay">
-        <div class="modal-content p-6 max-w-lg">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Gerenciar Equipes</h2>
-                <button id="closeModalEquipeBtn" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded-full bg-gray-50 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-            </div>
-            
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">Adicionar Nova Equipe</h3>
-            <form id="addEquipeForm" class="space-y-3 mb-6 p-4 border rounded-xl bg-indigo-50">
-                <div>
-                    <label for="novaEquipeNome" class="block text-sm font-medium text-gray-700">Nome da Equipe <span class="text-red-500">*</span></label>
-                    <input type="text" id="novaEquipeNome" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label for="novaEquipeId" class="block text-sm font-medium text-gray-700">ID Curto (ex: dev, qa) <span class="text-red-500">*</span></label>
-                        <input type="text" id="novaEquipeId" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5">
-                    </div>
-                    <div>
-                        <label for="novaEquipeCor" class="block text-sm font-medium text-gray-700">Cor de Destaque</label>
-                        <input type="color" id="novaEquipeCor" value="#4f46e5" class="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm p-1">
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition duration-300">
-                    Adicionar Equipe
-                </button>
-            </form>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-3 border-t pt-4">Equipes Atuais</h3>
-            <div id="listaEquipesContainer" class="space-y-3">
-                </div>
-        </div>
-    </div>
-
-    <div id="confirmationModal" class="modal-overlay">
-        <div class="confirmation-content">
-            <button id="closeConfirmationModalBtn" class="text-gray-400 hover:text-gray-600 focus:outline-none absolute top-4 right-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <p id="confirmationMessage" class="text-lg font-medium text-gray-800 mb-4"></p>
-            <input type="text" id="promptInput" placeholder="Digite o motivo aqui..." class="hidden w-full p-2 border border-gray-300 rounded-md mb-4 focus:ring-indigo-500 focus:border-indigo-500">
-            <div class="flex justify-center space-x-3">
-                <button id="cancelConfirmationBtn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl hover:bg-gray-400 transition duration-300"></button>
-                <button id="confirmActionBtn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-xl hover:bg-red-700 transition duration-300" style="display:none;"></button>
             </div>
         </div>
-    </div>
+        
+        <script type="module" src="/NovoCRM/Java/main.js"></script>
 
-
-    <script type="module" src="script.js"></script>
-</body>
-</html>
+    </body>
+    </html>
