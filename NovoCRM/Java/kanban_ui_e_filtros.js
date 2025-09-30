@@ -12,7 +12,8 @@ export function inicializarUI(data, modal, alerta, equipesModal, afterRenderCall
     processosContainer = document.getElementById('processosContainer');
     equipesFiltroContainer = document.getElementById('equipesFiltroContainer');
     buscaInput = document.getElementById('buscaInput');
-
+equipesFiltroContainer.style.display = 'flex';
+equipesFiltroContainer.style.gap = "20px"
     processosArrayGlobal = data.processos;
     equipesArrayGlobal = data.equipes;
 

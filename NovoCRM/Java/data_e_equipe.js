@@ -5,12 +5,13 @@
 
 // As cores são salvas como hexadecimais puros.
 export let equipes = [
-    { id: 'dev', nome: 'Desenvolvimento', cor: '#3b82f6' }, // blue-500
-    { id: 'qa', nome: 'Controle de Qualidade', cor: '#10b981' }, // green-500
-    { id: 'design', nome: 'Design UX/UI', cor: '#8b5cf6' }, // purple-500
+    { id: 'dev', nome: 'Venda', cor: '#3b82f6' }, // blue-500
+    { id: 'qa', nome: 'Formalizção', cor: '#10b981' }, // green-500
+    { id: 'design', nome: 'Desbloqueio', cor: '#8b5cf6' }, // purple-500
     { id: 'comercial', nome: 'Comercial', cor: '#ef4444' }, // red-500
-    { id: 'vendas', nome: 'Vendas', cor: '#f97316' }, // orange-500
-];
+    // { id: 'vendas', nome: 'Vendas', cor: '#f97316' }, // orange-500
+]
+
 
 export let processos = [
     { id: 'p1', titulo: 'Criação de Landing Page p/ Lançamento', responsavel: 'Ana Souza', valor: 5500.00, status: 'em_andamento', prioridade: 'alta', equipeId: 'dev', proximaEquipeId: 'qa', extras: [{nome: 'Design Aprovado', valor: 'Sim'}], historicoEquipes: ['design', 'dev'] },
