@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f4f8;
+}
+
+/* Estilos do Modal Principal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 95%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+}
+
+/* Estilos do Modal de Confirmação/Alerta */
+.confirmation-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    position: relative; /* Adicionado para posicionar o botão fechar */
+}
+
+.input-erro {
+    border-color: #ef4444; /* red-500 */
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
+}
+
+/* Aplica cor dinâmica para o botão ativo */
+.equipe-btn.ativo {
+    transform: scale(1.05);
+    outline: 3px solid rgba(255, 255, 255, 0.5); /* Anel branco leve */
+    outline-offset: 2px;
+    filter: brightness(1.1);
+}
+
+.equipe-card-mini {
+    border-left-width: 4px;
+}
+
+.processo-card {
+    min-height: 200px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

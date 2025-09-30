@@ -33,13 +33,14 @@ body {
 .wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px 0; /* Ajustado para melhor espaçamento com o corpo */
 }
 
 header h1 {
     margin-bottom: 1rem;
     text-align: center;
     color: #004a99;
+    font-size: 2rem;
 }
 
 /* --- Controles do Topo --- */
@@ -47,7 +48,7 @@ header h1 {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem; /* Aumentei a margem para separar do conteúdo */
     justify-content: center;
     align-items: center;
 }
@@ -91,6 +92,9 @@ input#buscaInput {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .btn:hover {
@@ -105,6 +109,15 @@ input#buscaInput {
     background: #c0392b;
 }
 
+.btn-retrocesso {
+    background: #ffc107;
+    color: #333;
+}
+.btn-retrocesso:hover {
+    background: #e0a800;
+    color: #000;
+}
+
 .equipe-btn {
     background: #0066cc;
 }
@@ -114,11 +127,13 @@ input#buscaInput {
 }
 
 /* --- Cards de Processo e Container --- */
-#listaProcessos {
+/* Estilo para a visualização de Lista */
+#listaProcessos:not(.kanban-view) {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr; /* Força lista simples */
     gap: 1rem;
     outline: none;
+    padding: 0 20px;
 }
 
 .card {
@@ -142,6 +157,7 @@ input#buscaInput {
 .card h3 {
     margin: 0 0 0.5rem 0;
     color: #004a99;
+    font-size: 1rem;
 }
 
 .card p {
@@ -149,8 +165,8 @@ input#buscaInput {
     font-size: 0.9rem;
 }
 
-/* Adicione esta nova classe ao seu arquivo style.css */
-.alerta-retrocesso {
+/* Novo Alerta de Retrocesso */
+.card.alerta-retrocesso {
     border: 2px solid #dc3545; /* Vermelho */
     box-shadow: 0 0 8px rgba(220, 53, 69, 0.5); /* Sombra para destacar */
 }
@@ -180,23 +196,29 @@ input#buscaInput {
     background: #2ecc71;
     color: white;
 }
-
-/* Prioridades */
-.priority.alta {
-    margin-right:5px ;
-    color: #e74c3c;
-    font-weight: bold;
+/* Adicionando retrocedido */
+.badge.status.retrocedido {
+    background: #f39c12;
+    color: white;
 }
 
+
+/* Prioridades */
+.priority {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.priority.urgente {
+    color :#dc3545; 
+}
+.priority.alta {
+    color: #e74c3c;
+}
 .priority.media {
     color: #f39c12;
 }
-
 .priority.baixa {
     color: #27ae60;
-}
-.priority.urgente{
-    color :#dc3545; 
 }
 
 /* Extras no card */
@@ -217,10 +239,24 @@ input#buscaInput {
     color: #888;
 }
 
-/* Card com alerta - status especial */
+/* Card com alerta - status especial (se precisar) */
 .card.alerta {
     border: 2px solid #e74c3c;
     background: #ffe6e6;
+}
+
+.card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sub-info{ 
+    display: flex;
+    flex-flow: row wrap;
+    gap: 8px;
+    margin: 10px 0 0 0;
+    font-size: 0.9rem;
 }
 
 /* --- Modal --- */
@@ -254,9 +290,12 @@ input#buscaInput {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
 }
 
-.modal-head h2 {
+.modal-head h2, .modal-head h3 {
     margin: 0;
     color: #004a99;
 }
@@ -368,9 +407,16 @@ textarea {
 /* Ações do modal */
 .modal-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between; /* Mudança para justificar os botões */
     gap: 0.5rem;
     margin-top: 1.5rem;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+}
+
+.modal-actions .right-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .modal-actions button {
@@ -401,14 +447,36 @@ textarea {
 }
 
 /* Responsividade */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .top-controls {
         flex-direction: column;
         align-items: stretch;
     }
 
-    input#buscaInput,
+    .filtro-equipes {
+        justify-content: space-between;
+    }
+    
+    input#buscaInput {
+        order: -1;
+    }
+    
     .btn {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .modal-actions .right-actions {
+        flex-direction: column;
+        margin-top: 0.5rem;
+    }
+
+    .modal-actions button {
         width: 100%;
     }
 }
@@ -418,8 +486,9 @@ textarea {
     display: flex;
     overflow-x: auto;
     gap: 1.5rem;
-    padding: 1rem;
+    padding: 1rem 0; /* Ajustado para melhor visualização */
     align-items: flex-start;
+    height: calc(100vh - 200px); /* Altura fixa para scroll horizontal */
 }
 
 .equipe-coluna {
@@ -433,6 +502,16 @@ textarea {
     gap: 0.5rem;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    max-height: 100%; /* Garante que a coluna se encaixe no pai */
+    overflow-y: auto; /* Permite scroll vertical dentro da coluna */
+}
+
+.equipe-coluna::-webkit-scrollbar {
+    width: 6px;
+}
+.equipe-coluna::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
 }
 
 .equipe-coluna h3.nome-equipe-kanban {
@@ -443,6 +522,7 @@ textarea {
     border-bottom: 2px solid #007bff;
     font-size: 1.1rem;
     font-weight: 700;
+    flex-shrink: 0; /* Não permite que o título encolha */
 }
 
 .equipe-coluna .card {
@@ -453,16 +533,9 @@ textarea {
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-/* Estilo para a visualização de card compacta */
+/* Estilo para a visualização de card compacta (usada no Kanban) */
 .card-compact {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    margin-bottom: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
+    /* Estilos do card base são suficientes, apenas garante que os itens extras sejam ocultados */
 }
 
 .card-compact .card-responsavel,
@@ -473,11 +546,9 @@ textarea {
 .card-compact .motivo-retrocesso {
     display: none;
 }
-.sub-info{ /*Aqui coloquei um espaçamento entre os itens*/
-    display: flex;
-    flex-flow: row wrap;
-    gap: 8px;
-    margin: 10px;
+
+.card-compact .card-title-row {
+    flex-direction: column;
 }
 
 .card-compact h3 {
@@ -494,35 +565,24 @@ textarea {
     font-weight: 600;
 }
 
-/* Estilo para o pop-up de retrocesso */
-#retrocessoModal {
+/* Estilo para o pop-up de retrocesso e confirmação (seletor corrigido) */
+#retrocessoModal, .modal-confirmacao {
     display: none;
     position: fixed;
-    z-index: 2;
+    z-index: 1001; /* Maior que o modal principal */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-/* Estilo para o pop-up de retrocesso */
-#btn btn-danger {
-    display: none;
-    position: fixed;
-    z-index: 2;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.6);
-}
-
 
 .modal-content-retrocesso {
     background-color: #fff;
-    margin: 15% auto;
     padding: 20px;
     border-radius: 8px;
     width: 90%;
@@ -552,4 +612,11 @@ textarea {
     display: flex;
     justify-content: flex-end;
     margin-top: 15px;
+    border-top: none;
 }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+    
