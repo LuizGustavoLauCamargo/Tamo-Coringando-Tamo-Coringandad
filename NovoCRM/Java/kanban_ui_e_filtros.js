@@ -1,45 +1,36 @@
-// ARQUIVO: kanban_ui_e_filtros.js (COMPLETO E CORRIGIDO)
-
-// --------------------------------------------------------------------------------
-// MÓDULO: kanban_ui_e_filtros.js
-// Lógica de renderização da interface e manipulação de filtros.
-// --------------------------------------------------------------------------------
+// ARQUIVO: kanban_ui_e_filtros.js (COMPLETO E CORRIGIDO - Valor)
 
 let processosContainer, equipesFiltroContainer, buscaInput;
 
 export let filtroEquipeAtivo = 'todos';
 export let buscaAtiva = '';
 
-// Variaveis globais de array que serão preenchidas por referência
 let processosArrayGlobal = [];
 let equipesArrayGlobal = [];
 
-// ✅ MUDANÇA 1: Adicionar afterRenderCallback aos parâmetros
 export function inicializarUI(data, modal, alerta, equipesModal, afterRenderCallback) {
     processosContainer = document.getElementById('processosContainer');
     equipesFiltroContainer = document.getElementById('equipesFiltroContainer');
     buscaInput = document.getElementById('buscaInput');
 
-    // Inicializa a UI do Kanban
-    // Armazena as referências globais
     processosArrayGlobal = data.processos;
     equipesArrayGlobal = data.equipes;
 
-    // ✅ MUDANÇA 2: Passar afterRenderCallback
+    // Passa o afterRenderCallback (adicionarListenerDeEdicao)
     inicializarFiltroEquipes(data.processos, data.equipes, filtrarProcessos, afterRenderCallback);
     filtrarProcessos(data.processos, data.equipes, '', 'todos', afterRenderCallback);
 
-    // Eventos Globais
+    // Eventos Globais (Certifique-se de que o afterRenderCallback está sendo passado onde necessário)
     if (document.getElementById('novoProcessoBtn')) {
         document.getElementById('novoProcessoBtn').addEventListener('click', () => {
-            // Passa o objeto UI para que o modal possa chamar funções de filtro após salvar/atualizar
-            modal.abrirModalProcesso(data, { filtrarProcessos, filtroEquipeAtivo, buscaAtiva }); 
+            // Passa o afterRenderCallback no objeto de referências para o ModalProcesso usar após salvar
+            modal.abrirModalProcesso(data, { filtrarProcessos, filtroEquipeAtivo, buscaAtiva, afterRenderCallback }); 
         });
     }
 
     if (document.getElementById('gerenciarEquipesBtn')) {
         document.getElementById('gerenciarEquipesBtn').addEventListener('click', () => {
-            // Passa funções de UI para que o modal possa atualizar os botões de filtro
+             // Passa o afterRenderCallback no objeto de referências para o ModalEquipe usar após salvar
             equipesModal.abrirModalGerenciarEquipes(data, { inicializarFiltroEquipes, filtrarProcessos, filtroEquipeAtivo, buscaAtiva, afterRenderCallback });
         });
     }
@@ -47,7 +38,6 @@ export function inicializarUI(data, modal, alerta, equipesModal, afterRenderCall
     if (buscaInput) {
         buscaInput.addEventListener('input', () => {
             buscaAtiva = buscaInput.value;
-            // ✅ MUDANÇA 3: Passar afterRenderCallback
             filtrarProcessos(data.processos, data.equipes, buscaAtiva, filtroEquipeAtivo, afterRenderCallback);
         });
     }
@@ -55,44 +45,33 @@ export function inicializarUI(data, modal, alerta, equipesModal, afterRenderCall
 
 // --- Funções de Filtro ---
 
-// ✅ MUDANÇA 4: Adicionar afterRenderCallback aos parâmetros
 export function inicializarFiltroEquipes(processosArray, equipesArray, callback, afterRenderCallback) {
     if (!equipesFiltroContainer) return;
 
-    equipesFiltroContainer.innerHTML = ''; // Limpa os botões existentes
+    equipesFiltroContainer.innerHTML = ''; 
 
-    // 1. Botão "Todas as Equipes"
     const totalCount = processosArray.length;
-    // ✅ MUDANÇA 5: Passar afterRenderCallback
     equipesFiltroContainer.appendChild(criarBotaoFiltro('todos', 'Todas as Equipes', totalCount, '#374151', callback, afterRenderCallback));
 
-    // 2. Botões das Equipes
     equipesArray.forEach(equipe => {
         const count = processosArray.filter(p => p.equipeId === equipe.id).length;
-        // Mostra a equipe se tiver processos OU se for a equipe ativa
         if (count > 0 || equipe.id === filtroEquipeAtivo) { 
-             // ✅ MUDANÇA 6: Passar afterRenderCallback
              equipesFiltroContainer.appendChild(criarBotaoFiltro(equipe.id, equipe.nome, count, equipe.cor, callback, afterRenderCallback));
         }
     });
 }
 
-// ✅ MUDANÇA 7: Adicionar afterRenderCallback aos parâmetros
 function criarBotaoFiltro(id, nome, count, corHex, callback, afterRenderCallback) {
     const button = document.createElement('button');
     const isActive = id === filtroEquipeAtivo;
     
-    // Configuração de classes e estilo dinâmico
     button.className = `equipe-btn text-sm font-semibold py-2 px-4 rounded-xl shadow-sm transition duration-300 flex items-center whitespace-nowrap`;
-    
-    // Aplica a cor de fundo e texto dinamicamente
     button.style.backgroundColor = corHex;
     button.style.color = '#ffffff'; 
     button.style.opacity = isActive ? '1' : '0.8';
     
-    // Adiciona a classe ativa para o efeito de destaque
     if (isActive) {
-        button.classList.add('ring-4', 'ring-offset-2', 'ativo'); // Adiciona a classe 'ativo' para usar o CSS customizado
+        button.classList.add('ring-4', 'ring-offset-2', 'ativo'); 
         button.style.setProperty('ring-color', corHex, 'important'); 
     }
     
@@ -105,18 +84,14 @@ function criarBotaoFiltro(id, nome, count, corHex, callback, afterRenderCallback
 
     button.addEventListener('click', () => {
         filtroEquipeAtivo = id;
-        // ✅ MUDANÇA 8: Passar afterRenderCallback na chamada de callback (filtrarProcessos)
         callback(processosArrayGlobal, equipesArrayGlobal, buscaAtiva, id, afterRenderCallback);
-        // ✅ MUDANÇA 9: Passar afterRenderCallback na recriação dos botões
         inicializarFiltroEquipes(processosArrayGlobal, equipesArrayGlobal, callback, afterRenderCallback); 
     });
 
     return button;
 }
 
-// ✅ MUDANÇA 10: Adicionar afterRenderCallback com valor padrão para a função principal
 export function filtrarProcessos(processosArray, equipesArray, busca = '', equipeId = 'todos', afterRenderCallback = () => {}) {
-    // Atualiza o estado global
     processosArrayGlobal = processosArray;
     equipesArrayGlobal = equipesArray;
     filtroEquipeAtivo = equipeId;
@@ -124,12 +99,10 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
 
     if (!processosContainer) return;
     
-    // 1. Filtro por Equipe
     let processosFiltrados = equipeId === 'todos' 
         ? processosArray 
         : processosArray.filter(p => p.equipeId === equipeId);
 
-    // 2. Filtro por Busca (título, responsável, motivo de retrocesso)
     if (busca.trim()) {
         const termo = busca.trim().toLowerCase();
         processosFiltrados = processosFiltrados.filter(p => 
@@ -139,21 +112,16 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
         );
     }
 
-    // 3. Renderização
-    // AQUI OCORRIA O ERRO! renderizarProcessos agora está definido abaixo.
     renderizarProcessos(processosFiltrados, equipesArray); 
-    
-    // ✅ MUDANÇA 11: Executar o callback (adicionarListenerDeEdicao) após a renderização
     afterRenderCallback(); 
 }
 
-// --- Funções de Renderização (Estavam faltando/invisíveis) ---
+// --- Funções de Renderização ---
 
 function renderizarProcessos(processosFiltrados, equipesArray) {
     if (!processosContainer) return;
-    processosContainer.innerHTML = ''; // Limpa o container
+    processosContainer.innerHTML = ''; 
 
-    // 1. Agrupar por Status (Pendentes, Em Andamento, Concluídos)
     const colunas = {
         pendente: { titulo: 'Pendentes', processos: [] },
         em_andamento: { titulo: 'Em Andamento', processos: [] },
@@ -166,21 +134,17 @@ function renderizarProcessos(processosFiltrados, equipesArray) {
         }
     });
 
-    // 2. Renderizar as Colunas
     Object.values(colunas).forEach(coluna => {
         const colunaDiv = criarColunaKanban(coluna.titulo);
         const colunaBody = colunaDiv.querySelector('.coluna-body');
         
-        // 3. Renderizar os Cards (Processos) dentro da coluna
         coluna.processos.sort((a, b) => {
-            // Ordenação por prioridade: Urgente > Alta > Média > Baixa
             const prioridades = ['urgente', 'alta', 'media', 'baixa'];
             return prioridades.indexOf(a.prioridade) - prioridades.indexOf(b.prioridade);
         }).forEach(processo => {
             colunaBody.appendChild(criarCardProcesso(processo, equipesArray));
         });
 
-        // Atualiza a contagem no título da coluna
         colunaDiv.querySelector('.coluna-titulo-h2').textContent = `${coluna.titulo} (${coluna.processos.length})`;
 
         processosContainer.appendChild(colunaDiv);
@@ -199,16 +163,16 @@ function criarColunaKanban(titulo) {
 }
 
 function criarCardProcesso(processo, equipesArray) {
-    // Usando as funções de helpers que simulam as do data_e_equipes (Data)
     const obterNomeEquipe = (id) => (equipesArray.find(e => e.id === id) || { nome: 'N/A' }).nome;
     const obterCorEquipe = (id) => (equipesArray.find(e => e.id === id) || { cor: '#9ca3af' }).cor;
 
     const corHex = obterCorEquipe(processo.equipeId);
     const equipeNome = obterNomeEquipe(processo.equipeId);
     const proximaEquipeNome = processo.proximaEquipeId ? obterNomeEquipe(processo.proximaEquipeId) : '';
-    const valorFormatado = (processo.valor / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     
-    // Classes de Prioridade
+    // ✅ CORREÇÃO APLICADA: Remove a divisão por 100
+   const valorFormatado = processo.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); 
+    
     let prioridadeClasses = '';
     switch(processo.prioridade) {
         case 'urgente': prioridadeClasses = 'bg-red-600'; break;

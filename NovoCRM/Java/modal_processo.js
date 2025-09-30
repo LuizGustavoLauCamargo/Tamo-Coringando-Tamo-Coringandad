@@ -1,3 +1,5 @@
+// ARQUIVO: modal_processo.js (CORRIGIDO)
+
 // --------------------------------------------------------------------------------
 // MÓDULO: modal_processo.js
 // Lógica de controle do modal de edição/criação de processo.
@@ -194,8 +196,9 @@ export function abrirModalProcesso(data, filtros, processoId = null) {
         modalTituloInput.value = processo.titulo || '';
         modalResponsavelInput.value = processo.responsavel || '';
         
-        // Formata o valor para exibição (R$ 0.000,00)
-        modalValorInput.value = (processo.valor !== undefined) ? (processo.valor / 100).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') : '';
+        // Formata o valor para exibição (R$ 0.000,00) - Corrigido para float/R$
+        // A formatação original (toFixed(2)...) está correta AQUI se o valor for float.
+        modalValorInput.value = (processo.valor !== undefined) ? (processo.valor).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') : '';
         
         modalStatusInput.value = processo.status || 'pendente';
         modalPrioridadeInput.value = processo.prioridade || 'media';
@@ -247,7 +250,7 @@ function salvarProcesso(data, filtros) {
         return;
     }
 
-    // Converte o valor monetário de volta para float (em centavos ou float puro)
+    // Converte o valor monetário de volta para float (em Reais)
     const valorMonetario = modalValorInput.value.replace(/\./g, '').replace(',', '.');
     const valorFloat = parseFloat(valorMonetario) || 0;
     const equipeAtualId = document.getElementById('modalEquipeHidden').value;
@@ -255,7 +258,7 @@ function salvarProcesso(data, filtros) {
     // 1. Coleta de dados
     processo.titulo = modalTituloInput.value.trim();
     processo.responsavel = modalResponsavelInput.value.trim();
-    // Arredonda para 2 casas para evitar erros de ponto flutuante, salvando como float
+    // Salva o valor como float arredondado para duas casas decimais
     processo.valor = Math.round(valorFloat * 100) / 100; 
     processo.status = modalStatusInput.value;
     processo.prioridade = modalPrioridadeInput.value;
@@ -273,12 +276,10 @@ function salvarProcesso(data, filtros) {
         processo.status = 'pendente'; // Reseta para pendente na nova equipe
         processo.proximaEquipeId = ''; // Limpa a próxima equipe
         
-        // Adiciona ao histórico (se for uma nova equipe)
         if (!processo.historicoEquipes.includes(proximaEquipe)) {
             processo.historicoEquipes.push(proximaEquipe);
         }
 
-        // Remove status de retrocedido se avançou
         processo.retrocedido = false;
         processo.retrocessoMotivo = '';
         
@@ -286,11 +287,10 @@ function salvarProcesso(data, filtros) {
     } else {
         // Se não houver mudança de equipe, garante que a equipeId seja a atual
         processo.equipeId = equipeAtualId;
-        processo.proximaEquipeId = proximaEquipe; // Mantém a próxima equipe selecionada, se houver
+        processo.proximaEquipeId = proximaEquipe; 
         if (!processo.historicoEquipes.includes(equipeAtualId)) {
             processo.historicoEquipes.push(equipeAtualId);
         }
-        // Remove retrocedido se o status for alterado (ex: de pendente para em_andamento)
         if (processo.status !== 'pendente') {
             processo.retrocedido = false;
             processo.retrocessoMotivo = '';
@@ -300,11 +300,19 @@ function salvarProcesso(data, filtros) {
     // 3. Salvar no array global
     if (isNew) {
         data.processos.push(processo);
-    } // Se for edição, a referência já está no array.
+    } 
 
     // 4. Fechar modal e renderizar
     fecharModalProcesso();
-    filtros.filtrarProcessos(data.processos, data.equipes, filtros.buscaAtiva, filtros.filtroEquipeAtivo);
+    
+    // ✅ CORREÇÃO APLICADA: Chama filtrarProcessos com 5 argumentos (o afterRenderCallback é o 5º)
+    filtros.filtrarProcessos(
+        data.processos, 
+        data.equipes, 
+        filtros.buscaAtiva, 
+        filtros.filtroEquipeAtivo,
+        filtros.afterRenderCallback // Argumento crucial para re-anexar listeners!
+    );
 }
 
 function processarRetrocesso(motivo, data, filtros) {
@@ -325,17 +333,26 @@ function processarRetrocesso(motivo, data, filtros) {
 
     // 1. Altera os dados
     processo.equipeId = equipeAnteriorId;
-    processo.status = 'pendente'; // Sempre volta como pendente
+    processo.status = 'pendente'; 
     processo.retrocedido = true;
     processo.retrocessoMotivo = motivo;
-    processo.proximaEquipeId = ''; // Limpa o campo de avanço
+    processo.proximaEquipeId = ''; 
 
     // 2. Remove o histórico da equipe atual
     processo.historicoEquipes.splice(historicoIndex, 1);
 
     // 3. Fechar modal e renderizar
     fecharModalProcesso();
-    filtros.filtrarProcessos(data.processos, data.equipes, filtros.buscaAtiva, filtros.filtroEquipeAtivo);
+    
+    // ✅ CORREÇÃO APLICADA: Chama filtrarProcessos com 5 argumentos
+    filtros.filtrarProcessos(
+        data.processos, 
+        data.equipes, 
+        filtros.buscaAtiva, 
+        filtros.filtroEquipeAtivo,
+        filtros.afterRenderCallback // Argumento crucial!
+    );
+    
     abrirAlertaModal(`Processo retrocedido para a equipe: ${data.obterNomeEquipe(equipeAnteriorId)}.`);
 }
 
@@ -347,7 +364,16 @@ function deletarProcesso(data, filtros) {
         const titulo = data.processos[index].titulo;
         data.processos.splice(index, 1);
         fecharModalProcesso();
-        filtros.filtrarProcessos(data.processos, data.equipes, filtros.buscaAtiva, filtros.filtroEquipeAtivo);
+        
+        // ✅ CORREÇÃO APLICADA: Chama filtrarProcessos com 5 argumentos
+        filtros.filtrarProcessos(
+            data.processos, 
+            data.equipes, 
+            filtros.buscaAtiva, 
+            filtros.filtroEquipeAtivo,
+            filtros.afterRenderCallback // Argumento crucial!
+        );
+        
         abrirAlertaModal(`Processo "${titulo}" excluído com sucesso!`);
     } else {
         abrirAlertaModal('Erro ao excluir processo.');

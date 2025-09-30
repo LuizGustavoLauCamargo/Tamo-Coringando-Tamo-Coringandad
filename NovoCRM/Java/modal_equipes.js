@@ -14,7 +14,7 @@ export function inicializarModalEquipe(data, filtros) {
     addEquipeForm = document.getElementById('addEquipeForm');
     listaEquipesContainer = document.getElementById('listaEquipesContainer');
     
-    novaEquipeNomeInput = document.getElementById('novaEquipeNome');
+    novaEquipeNomeInput = document.getElementById('novaEquipeNavome');
     novaEquipeIdInput = document.getElementById('novaEquipeId');
     novaEquipeCorInput = document.getElementById('novaEquipeCor');
     
@@ -79,52 +79,4 @@ function adicionarNovaEquipe(data, filtros) {
     } else {
         abrirAlertaModal(result.message);
     }
-}
-
-function renderizarListaEquipes(data, filtros) {
-    if (!listaEquipesContainer) return;
-    listaEquipesContainer.innerHTML = '';
-    
-    data.equipes.forEach(equipe => {
-        const div = document.createElement('div');
-        div.className = 'equipe-card-mini flex justify-between items-center p-3 rounded-lg bg-white shadow-sm';
-        // Aplica a cor de borda diretamente
-        div.style.borderLeftColor = equipe.cor;
-        div.style.borderLeftStyle = 'solid';
-        div.style.borderLeftWidth = '6px'; // Aumenta a espessura da borda para destaque
-        
-        const content = document.createElement('span');
-        content.className = 'font-medium text-gray-800';
-        content.textContent = `${equipe.nome} (${equipe.id})`;
-        
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Excluir';
-        deleteBtn.className = 'bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition duration-150';
-        deleteBtn.setAttribute('data-equipe-id', equipe.id);
-        
-        deleteBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const equipeIdToDelete = e.target.getAttribute('data-equipe-id');
-            
-            exibirModalConfirmacao(`Tem certeza que deseja EXCLUIR a equipe '${equipe.nome}'? Todos os processos desta equipe serão PERDIDOS!`, () => {
-                // Callback de confirmação
-                // Passamos data.processos diretamente para atualizar a referência global no módulo data
-                const result = data.deleteEquipe(equipeIdToDelete, data.processos);
-                
-                if (result.success) {
-                    abrirAlertaModal(result.message);
-                    renderizarListaEquipes(data, filtros); 
-                    filtros.inicializarFiltroEquipes(data.processos, data.equipes, filtros.filtrarProcessos); // Re-cria os botões de filtro
-                    // Garante que o filtro volte para 'todos' se a equipe ativa for deletada
-                    filtros.filtrarProcessos(data.processos, data.equipes, filtros.buscaAtiva, 'todos'); 
-                } else {
-                    abrirAlertaModal(result.message);
-                }
-            });
-        });
-        
-        div.appendChild(content);
-        div.appendChild(deleteBtn);
-        listaEquipesContainer.appendChild(div);
-    });
 }
