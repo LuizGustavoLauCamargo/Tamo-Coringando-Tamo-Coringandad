@@ -11,6 +11,7 @@ import * as Alerta from './modal_alerta.js';
 import * as ModalEquipe from './modal_equipes.js'; 
 import * as ModalProcesso from './modal_processo.js'; 
 import * as UI from './kanban_ui_e_filtros.js';
+import * as anexos from './anexos_service.js'; // ✅ NOVO MÓDULO DE ANEXOS
 
 
 // Função de inicialização principal
