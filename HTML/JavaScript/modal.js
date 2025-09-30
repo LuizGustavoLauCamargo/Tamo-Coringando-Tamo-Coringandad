@@ -120,12 +120,6 @@ export function inicializarModal() {
         });
     }
 
-
-
-
-
-
-
     // --- Ação de Retroceder Processo ---
     if (retrocederBtn) {
         retrocederBtn.addEventListener('click', () => {
@@ -686,6 +680,7 @@ function criarExtraField(nome = '', valor = '', arquivos = []) {
     removeBtn.addEventListener('click', () => {
         div.remove();
         recarregarFocaveis();
+        
     });
 
     div.appendChild(nomeInput);
@@ -695,5 +690,6 @@ function criarExtraField(nome = '', valor = '', arquivos = []) {
     div.appendChild(removeBtn);
 
     return div;
+
 }
 

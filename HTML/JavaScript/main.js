@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const equipePadrao = (btnAtivo?.dataset.id !== 'todos') ? btnAtivo?.dataset.id : equipes[0]?.id;
             abrirModalNovoProcesso(equipes, equipePadrao);
         });
+        
     }
 
     // 2. Adiciona evento ao botão "Adicionar Equipe"
@@ -80,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
 
 // IMPORTANTE: O código problemático do botão de exclusão foi REMOVIDO daqui.
 // Ele deve estar no modal.js, dentro da função inicializarModal().

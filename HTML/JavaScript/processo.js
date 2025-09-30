@@ -3,7 +3,7 @@
 // Importa funções essenciais de outros módulos
 import { criarCardProcesso } from './card.js';
 // Importa as funções de controle de modal/aviso DO modal.js
-import { fecharModal, exibirModalConfirmacao } from './modal.js'; 
+import { fecharModal, exibirModalConfirmacao, deleteProcessBtn } from './modal.js'; 
 
 // --- Dados Iniciais (Exemplo) ---
 export const equipes = [
@@ -32,7 +32,6 @@ export function confirmarExclusao(processoId) {
     if (!processoId) return;
     
     fecharModal(); // Fecha o modal de edição
-    
     
     // Chama o modal de aviso (pop-up)
     if (typeof exibirModalConfirmacao === 'function') {
