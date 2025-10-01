@@ -6,7 +6,7 @@
 // As cores são salvas como hexadecimais puros.
 export let equipes = [
     { id: 'dev', nome: 'Venda', cor: '#3b82f6' }, // blue-500
-    { id: 'qa', nome: 'Formalizção', cor: '#10b981' }, // green-500
+    { id: 'qa', nome: 'Formalização', cor: '#10b981' }, // green-500
     { id: 'design', nome: 'Desbloqueio', cor: '#8b5cf6' }, // purple-500
     { id: 'comercial', nome: 'Comercial', cor: '#ef4444' }, // red-500
     // { id: 'vendas', nome: 'Vendas', cor: '#f97316' }, // orange-500
