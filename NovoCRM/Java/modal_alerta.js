@@ -1,3 +1,5 @@
+// ARQUIVO: modal_alerta.js (CORRIGIDO PARA PROMPT)
+
 // --------------------------------------------------------------------------------
 // MÓDULO: modal_alerta.js
 // Lógica de controle dos modais de alerta/confirmação (Substitui alert/prompt)
@@ -16,17 +18,51 @@ export function inicializarModalAlerta() {
     promptInput = document.getElementById('promptInput');
     
     if (closeConfirmationModalBtn) closeConfirmationModalBtn.addEventListener('click', fecharConfirmacaoModal);
-    if (cancelConfirmationBtn) cancelConfirmationBtn.addEventListener('click', fecharConfirmacaoModal);
+    
+    // 🎯 MUDANÇA CRÍTICA: Ajustar o listener do Cancelar para retornar NULL no modo PROMPT
+    if (cancelConfirmationBtn) {
+        cancelConfirmationBtn.addEventListener('click', () => {
+            const isPromptMode = promptInput && promptInput.style.display !== 'none';
+            if (isPromptMode && onConfirmCallback) {
+                // Se estiver no modo prompt e cancelar, retorna null
+                onConfirmCallback(null); 
+            }
+            fecharConfirmacaoModal();
+        });
+    }
     
     if (confirmActionBtn) {
         confirmActionBtn.addEventListener('click', () => {
             if (onConfirmCallback) {
-                onConfirmCallback();
+                
+                // 🎯 MUDANÇA CRÍTICA: Lógica que diferencia Confirm/Prompt
+                if (promptInput && promptInput.style.display !== 'none') {
+                    // MODO PROMPT: Passa o valor do input como argumento para o callback
+                    const motivo = promptInput.value;
+                    onConfirmCallback(motivo);
+                } else {
+                    // MODO CONFIRM: Chama o callback sem argumentos
+                    onConfirmCallback();
+                }
             }
             fecharConfirmacaoModal(); 
         });
     }
 }
+
+export function fecharConfirmacaoModal() {
+    if (confirmationModal) {
+        confirmationModal.style.display = 'none';
+    }
+    onConfirmCallback = null;
+    
+    if (promptInput) {
+        // Garante que o input é sempre escondido ao fechar
+        promptInput.style.display = 'none';
+        promptInput.value = '';
+    }
+}
+
 
 export function exibirModalConfirmacao(mensagem, callback) {
     if (confirmationModal && confirmationMessage && confirmActionBtn && cancelConfirmationBtn) {
@@ -69,24 +105,21 @@ export function abrirPromptModal(mensagem, callback) {
         return;
     }
     
-    promptInput.style.display = 'block';
+    // 1. Configuração do PROMPT
+    confirmationMessage.textContent = mensagem;
+    promptInput.style.display = 'block'; // Mostra o input de texto
     promptInput.value = '';
     
-    exibirModalConfirmacao(mensagem, () => {
-        const motivo = promptInput.value;
-        callback(motivo);
-    });
-
-    promptInput.focus();
-}
-
-export function fecharConfirmacaoModal() {
-    if (confirmationModal) {
-        confirmationModal.style.display = 'none';
-    }
-    onConfirmCallback = null;
+    // 2. Configuração dos Botões
+    confirmActionBtn.textContent = 'Confirmar';
+    confirmActionBtn.style.display = 'inline-block';
+    cancelConfirmationBtn.textContent = 'Cancelar';
+    cancelConfirmationBtn.style.display = 'inline-block';
     
-    if (promptInput) {
-        promptInput.style.display = 'none';
-    }
+    // 3. Define o Callback que irá receber o valor do input
+    onConfirmCallback = callback;
+
+    // 4. Abre e foca
+    confirmationModal.style.display = 'flex';
+    promptInput.focus();
 }

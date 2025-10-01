@@ -1,4 +1,4 @@
-// ARQUIVO: kanban_ui_e_filtros.js (COMPLETO E FINALIZADO)
+// ARQUIVO: kanban_ui_e_filtros.js (COMPLETO E FINALIZADO - REVISADO)
 
 let processosContainer, equipesFiltroContainer, buscaInput;
 
@@ -100,7 +100,8 @@ function criarBotaoFiltro(id, nome, count, corHex, callback, afterRenderCallback
     return button;
 }
 
-export function filtrarProcessos(processosArray, equipesArray, busca = '', equipeId = 'todos', afterRenderCallback = () => {}) {
+// 🎯 CORREÇÃO CRÍTICA AQUI: O callback agora é tratado como opcional
+export function filtrarProcessos(processosArray, equipesArray, busca = '', equipeId = 'todos', afterRenderCallback) {
     processosArrayGlobal = processosArray;
     equipesArrayGlobal = equipesArray;
     filtroEquipeAtivo = equipeId;
@@ -119,6 +120,7 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
         processosFiltrados = processosFiltrados.filter(p => 
             p.titulo.toLowerCase().includes(termo) ||
             p.responsavel.toLowerCase().includes(termo) ||
+            // A busca já inclui o Motivo Retrocesso (bom!)
             (p.retrocessoMotivo && p.retrocessoMotivo.toLowerCase().includes(termo))
         );
     }
@@ -126,15 +128,17 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
     // 3. Renderização dos cards
     renderizarProcessos(processosFiltrados, equipesArray); 
     
-    // 4. CHAMADA CRÍTICA: Reativa os listeners de clique em todos os novos cards
-    afterRenderCallback(); 
+    // 4. CHAMADA CRÍTICA: Se o afterRenderCallback for passado (não é nulo), ele é executado.
+    if (afterRenderCallback) {
+        afterRenderCallback(); 
+    }
 }
 
 // --- Funções de Renderização ---
 
 function renderizarProcessos(processosFiltrados, equipesArray) {
     if (!processosContainer) return;
-    processosContainer.innerHTML = ''; // Limpa o Kanban (apaga cards antigos e seus listeners)
+    processosContainer.innerHTML = ''; // Limpa o Kanban 
 
     const colunas = {
         pendente: { titulo: 'Pendentes', processos: [] },
@@ -152,7 +156,7 @@ function renderizarProcessos(processosFiltrados, equipesArray) {
         const colunaDiv = criarColunaKanban(coluna.titulo);
         const colunaBody = colunaDiv.querySelector('.coluna-body');
         
-        // Ordenação por prioridade
+        // Ordenação por prioridade (Correto: Urgente vem primeiro)
         coluna.processos.sort((a, b) => {
             const prioridades = ['urgente', 'alta', 'media', 'baixa'];
             return prioridades.indexOf(a.prioridade) - prioridades.indexOf(b.prioridade);
@@ -221,7 +225,7 @@ function criarCardProcesso(processo, equipesArray) {
         
         <div class="flex justify-between items-center border-t pt-2 mt-2">
             <span class="text-xs font-medium py-1 px-2 rounded-lg text-white" style="background-color: ${corHex};">
-                ${equipeNome}
+                ${equipeNome} 
             </span>
             ${proximaEquipeNome ? `
                 <span class="text-xs text-gray-500 italic">Próximo: ${proximaEquipeNome}</span>

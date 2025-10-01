@@ -1,62 +1,68 @@
-// ARQUIVO: main.js (CORRIGIDO)
+// ARQUIVO: main.js (FINAL - CORRIGIDO com DELEGAÇÃO DE EVENTOS e DOWNLOAD)
 
 // --------------------------------------------------------------------------------
 // MÓDULO: main.js
-// Ponto de entrada da aplicação. Importa e inicializa todos os módulos.
+// Ponto de entrada da aplicação. Inicializa módulos e o listener de delegação.
 // --------------------------------------------------------------------------------
 
-// ✅ CORREÇÃO DE CAMINHO: Usar SOMENTE o caminho relativo './'
-import * as Data from './data_e_equipe.js'; // Confirme o nome do arquivo (equipe ou equipes)
+import * as Data from './data_e_equipe.js'; 
 import * as Alerta from './modal_alerta.js'; 
 import * as ModalEquipe from './modal_equipes.js'; 
 import * as ModalProcesso from './modal_processo.js'; 
 import * as UI from './kanban_ui_e_filtros.js';
-import * as anexos from './anexos_service.js'; // ✅ NOVO MÓDULO DE ANEXOS
-
+import * as anexos from './anexos_service.js'; 
+import { simularDownloadTodos } from './render.js'; // 👈 Importa a função de download
 
 // Função de inicialização principal
 function inicializarApp() {
-    // 1. Inicializa o Módulo de Alerta
-    Alerta.inicializarModalAlerta();
-
-    // 2. Inicializa o Módulo de Equipes (precisa da Data e das funções de filtro da UI)
-    ModalEquipe.inicializarModalEquipe(Data, UI);
-
-    // 3. Inicializa o Módulo de Processos (precisa de Data e UI para salvar e atualizar)
-    ModalProcesso.inicializarModalProcesso(Data, UI);
-    
-    // ✅ CORREÇÃO LÓGICA: Passa adicionarListenerDeEdicao como um callback para a UI.
-    UI.inicializarUI(Data, ModalProcesso, Alerta, ModalEquipe, adicionarListenerDeEdicao); 
+    console.log("✅ [MAIN] Aplicação inicializada. Iniciando módulos.");
+    
+    // 1. Inicializa Módulos
+    Alerta.inicializarModalAlerta();
+    ModalEquipe.inicializarModalEquipe(Data, UI);
+    ModalProcesso.inicializarModalProcesso(Data, UI);
+    anexos.inicializarAnexos(Data, ModalProcesso); 
+    
+    // 2. Inicializa a UI. Passamos a função de callback para reanexar listeners (caso necessário, mas a delegação resolve).
+    // 🚨 Nota: Embora a delegação reduza a necessidade de um afterRenderCallback, mantemos a estrutura.
+    UI.inicializarUI(Data, ModalProcesso, Alerta, ModalEquipe, null); 
+    
+    // 3. Configura o Listener ÚNICO (Delegação de Eventos)
+    configurarListenerCard(Data, UI);
 }
 
-// Essa função anexa o listener de 'click' aos cards para abrir o modal de edição.
-// (MANTIDA)
-function adicionarListenerDeEdicao() {
-    const processosContainer = document.getElementById('processosContainer');
-    if (!processosContainer) return;
+// ✅ NOVO: Funções de Delegação de Eventos para os Cards
+// Anexa um único listener ao container pai para capturar todos os cliques em cards.
+function configurarListenerCard(data, filtros) {
+    const processosContainer = document.getElementById('processosContainer');
+    if (!processosContainer) return;
 
-    // Remove listeners antigos (prevenção de duplicação) usando a técnica de cloneNode
-    processosContainer.querySelectorAll('.processo-card').forEach(card => {
-        // Clonamos e substituímos o nó para remover todos os event listeners de forma simples
-        const newCard = card.cloneNode(true);
-        card.parentNode.replaceChild(newCard, card);
-        
-        newCard.addEventListener('click', () => {
-            const processoId = newCard.getAttribute('data-processo-id');
-            // Chama a função de abertura do modal, passando os dados e o ID
-            ModalProcesso.abrirModalProcesso(Data, UI, processoId);
-        });
-    });
+    // Anexa UM ÚNICO listener ao container pai.
+    processosContainer.addEventListener('click', (e) => {
+        // 1. Verifica se o clique foi no botão de download
+        const downloadBtn = e.target.closest('.download-all-btn');
+        if (downloadBtn) {
+            // Impede que o clique no botão de download propague para o card (e abra o modal)
+            e.stopPropagation(); 
+            
+            console.log("💾 [MAIN] Delegação detectada no Botão de Download. Acionando serviço...");
+            // Chama a função importada para simular o download
+            simularDownloadTodos(e);
+            return; // Encerra a execução do listener
+        }
+
+        // 2. Se não for o botão de download, verifica se foi um clique no card (ou qualquer outro elemento dentro dele)
+        const card = e.target.closest('.processo-card');
+        
+        if (card) {
+            const processoId = card.getAttribute('data-processo-id');
+            console.log(`➡️ [MAIN] Delegação detectada no Card ID: ${processoId}. Abrindo modal...`);
+            
+            // Chama a função de abertura do modal  
+            ModalProcesso.abrirModalProcesso(data, filtros, processoId); 
+        }
+    });
 }
-
-// ❌ BLOCO REMOVIDO: Este código causava o Uncaught TypeError e foi substituído pelo callback.
-/*
-const filtrarProcessosOriginal = UI.filtrarProcessos;
-UI.filtrarProcessos = (processosArray, equipesArray, busca, equipeId) => {
-    filtrarProcessosOriginal(processosArray, equipesArray, busca, equipeId);
-    adicionarListenerDeEdicao();
-};
-*/
 
 // Inicia a aplicação quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', inicializarApp);
