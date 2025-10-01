@@ -47,9 +47,9 @@ export function inicializarModalEquipe(data, UI) {
 
   // Listener para o clique no botão de excluir equipe (usa delegação)
   if (equipesListContainer) {
+
     equipesListContainer.addEventListener("click", (e) => {
       const deleteBtn = e.target.closest(".delete-equipe-btn");
-
       if (deleteBtn) {
         const equipeId = deleteBtn.getAttribute("data-equipe-id");
         const processoCount = deleteBtn.getAttribute("data-processo-count");
@@ -60,7 +60,10 @@ export function inicializarModalEquipe(data, UI) {
       }
     });
   }
+  
 }
+
+
 
 export function abrirModalGerenciarEquipes(data, UIReferences) {
   dataRefs = data;
@@ -144,7 +147,7 @@ export function deletarEquipe(equipeId, data, filtros) {
 
   const equipeNome = data.equipes[equipeIndex].nome;
   // 1. Remove os processos vinculados
-   data.processos.filter((p) => p.equipeId !== equipeId);
+  data.processos.filter((p) => p.equipeId !== equipeId);
   processarRetrocesso();
 
   // 2. Remove a equipe
