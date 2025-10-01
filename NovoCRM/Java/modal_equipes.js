@@ -5,156 +5,195 @@
 // Lógica de controle do modal de gerenciamento de equipes.
 // --------------------------------------------------------------------------------
 
-import { exibirModalConfirmacao, abrirAlertaModal } from './modal_alerta.js';
+import { filtrarProcessos } from "./kanban_ui_e_filtros.js";
+import { exibirModalConfirmacao, abrirAlertaModal } from "./modal_alerta.js";
+import { deletarProcesso, processarRetrocesso } from "./modal_processo.js";
 
 // NOTA: 'modalEquipesOverlay' deve ser o ID do overlay do modal no seu HTML!
-let modalEquipesOverlay, equipesListContainer, novaEquipeInput, novaEquipeCorInput, addEquipeBtn, closeModalEquipesBtn;
+let modalEquipesOverlay,
+  equipesListContainer,
+  novaEquipeInput,
+  novaEquipeCorInput,
+  addEquipeBtn,
+  closeModalEquipesBtn;
 let dataRefs = {};
-let uiRefs = {}; 
+let uiRefs = {};
 
 export function inicializarModalEquipe(data, UI) {
-    dataRefs = data;
-    uiRefs = UI;
-    
-    // Captura dos elementos do DOM
-    modalEquipesOverlay = document.getElementById('modalEquipesOverlay'); // ID do overlay principal (CORRIGIDO)
-    equipesListContainer = document.getElementById('listaEquipesContainer'); // ID da UL/DIV de listagem
-    novaEquipeInput = document.getElementById('novaEquipeNome');
-    novaEquipeCorInput = document.getElementById('novaEquipeCor');
-    addEquipeBtn = document.getElementById('addEquipeForm').querySelector('button[type="submit"]');
-    closeModalEquipesBtn = document.getElementById('closeModalEquipeBtn'); // ID do botão fechar no header do modal
-    
-    // Listeners
-    if (closeModalEquipesBtn) closeModalEquipesBtn.addEventListener('click', fecharModalEquipes);
-    
-    // Listener de submissão do formulário (usando o form para permitir Enter)
-    if (document.getElementById('addEquipeForm')) {
-        document.getElementById('addEquipeForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            salvarNovaEquipe(dataRefs, uiRefs);
-        });
-    }
-    
-    // Listener para o clique no botão de excluir equipe (usa delegação)
-    if (equipesListContainer) {
-        equipesListContainer.addEventListener('click', (e) => {
-            const deleteBtn = e.target.closest('.delete-equipe-btn');
-            if (deleteBtn) {
-                const equipeId = deleteBtn.getAttribute('data-equipe-id');
-                const processoCount = deleteBtn.getAttribute('data-processo-count'); 
-                exibirModalConfirmacao(`Tem certeza que deseja excluir a equipe e seus ${processoCount} processos?`, 
-                    () => deletarEquipe(equipeId, dataRefs, uiRefs)
-                );
-            }
-        });
-    }
+  dataRefs = data;
+  uiRefs = UI;
+
+  // Captura dos elementos do DOM
+  modalEquipesOverlay = document.getElementById("modalEquipesOverlay"); // ID do overlay principal (CORRIGIDO)
+  equipesListContainer = document.getElementById("listaEquipesContainer"); // ID da UL/DIV de listagem
+  novaEquipeInput = document.getElementById("novaEquipeNome");
+  novaEquipeCorInput = document.getElementById("novaEquipeCor");
+  addEquipeBtn = document
+    .getElementById("addEquipeForm")
+    .querySelector('button[type="submit"]');
+  closeModalEquipesBtn = document.getElementById("closeModalEquipeBtn"); // ID do botão fechar no header do modal
+
+  // Listeners
+  if (closeModalEquipesBtn)
+    closeModalEquipesBtn.addEventListener("click", fecharModalEquipes);
+
+  // Listener de submissão do formulário (usando o form para permitir Enter)
+  if (document.getElementById("addEquipeForm")) {
+    document.getElementById("addEquipeForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      salvarNovaEquipe(dataRefs, uiRefs);
+    });
+  }
+
+  // Listener para o clique no botão de excluir equipe (usa delegação)
+  if (equipesListContainer) {
+    equipesListContainer.addEventListener("click", (e) => {
+      const deleteBtn = e.target.closest(".delete-equipe-btn");
+
+      if (deleteBtn) {
+        const equipeId = deleteBtn.getAttribute("data-equipe-id");
+        const processoCount = deleteBtn.getAttribute("data-processo-count");
+        exibirModalConfirmacao(
+          `Tem certeza que deseja excluir a equipe e seus ${processoCount} processos?`,
+          () => deletarEquipe(equipeId, dataRefs, uiRefs)
+        );
+      }
+    });
+  }
 }
 
 export function abrirModalGerenciarEquipes(data, UIReferences) {
-    dataRefs = data;
-    uiRefs = UIReferences; 
+  dataRefs = data;
+  uiRefs = UIReferences;
 
-    // 1. Garante que o modal seja exibido
-    if (modalEquipesOverlay) {
-        modalEquipesOverlay.style.display = 'flex'; // Abre o pop-up (CORRIGIDO)
-    } else {
-         console.error("Erro ao abrir modal: 'modalEquipesOverlay' não encontrado. Verifique o ID no HTML.");
-    }
+  // 1. Garante que o modal seja exibido
+  if (modalEquipesOverlay) {
+    modalEquipesOverlay.style.display = "flex"; // Abre o pop-up (CORRIGIDO)
+  } else {
+    console.error(
+      "Erro ao abrir modal: 'modalEquipesOverlay' não encontrado. Verifique o ID no HTML."
+    );
+  }
 
-    // 2. Preenche a lista de equipes
-    renderizarListaEquipes(dataRefs.equipes, dataRefs.processos); // (CORRIGIDO: ReferenceError resolvido)
-    
-    // 3. Limpa inputs de nova equipe
-    if (novaEquipeInput) novaEquipeInput.value = '';
-    if (novaEquipeCorInput) novaEquipeCorInput.value = '#3b82f6'; // Cor padrão Tailwind Blue-600
+  // 2. Preenche a lista de equipes
+  renderizarListaEquipes(dataRefs.equipes, dataRefs.processos); // (CORRIGIDO: ReferenceError resolvido)
+
+  // 3. Limpa inputs de nova equipe
+  if (novaEquipeInput) novaEquipeInput.value = "";
+  if (novaEquipeCorInput) novaEquipeCorInput.value = "#3b82f6"; // Cor padrão Tailwind Blue-600
 }
 
 function fecharModalEquipes() {
-    if (modalEquipesOverlay) {
-        modalEquipesOverlay.style.display = 'none';
-    }
+  if (modalEquipesOverlay) {
+    modalEquipesOverlay.style.display = "none";
+  }
 }
 
 // --- Funções de Manipulação de Dados ---
 
-function salvarNovaEquipe(data, filtros) {
-    const nome = novaEquipeInput?.value.trim();
-    const cor = novaEquipeCorInput?.value;
-    // O campo 'ID Curto' (novaEquipeId) está no HTML, mas não é usado neste código JS.
-    // Para simplificar, estamos usando Date.now() como ID.
-    
-    if (!nome || nome.length < 2) {
-        abrirAlertaModal('O nome da equipe deve ter pelo menos 2 caracteres.');
-        return;
-    }
-    if (data.equipes.some(e => e.nome.toLowerCase() === nome.toLowerCase())) {
-        abrirAlertaModal('Já existe uma equipe com este nome.');
-        return;
-    }
+export function salvarNovaEquipe(data, filtros) {
+  const nome = novaEquipeInput?.value.trim();
+  const cor = novaEquipeCorInput?.value;
+  // O campo 'ID Curto' (novaEquipeId) está no HTML, mas não é usado neste código JS.
+  // Para simplificar, estamos usando Date.now() como ID.
 
-    const novaEquipe = {
-        id: 'e' + Date.now(),
-        nome: nome,
-        cor: cor
-    };
+  if (!nome || nome.length < 2) {
+    abrirAlertaModal("O nome da equipe deve ter pelo menos 2 caracteres.");
+    return;
+  }
+  if (data.equipes.some((e) => e.nome.toLowerCase() === nome.toLowerCase())) {
+    abrirAlertaModal("Já existe uma equipe com este nome.");
+    return;
+  }
 
-    data.equipes.push(novaEquipe);
+  const novaEquipe = {
+    id: "e" + Date.now(),
+    nome: nome,
+    cor: cor,
+  };
 
-    // 1. Re-renderiza a lista no modal
-    renderizarListaEquipes(data.equipes, data.processos);
+  data.equipes.push(novaEquipe);
 
-    // 2. Re-renderiza a UI principal (filtros e cards)
-    const afterRenderCallback = filtros.afterRenderCallback; 
+  // 1. Re-renderiza a lista no modal
+  renderizarListaEquipes(data.equipes, data.processos);
 
-    filtros.inicializarFiltroEquipes(data.processos, data.equipes, filtros.filtrarProcessos, afterRenderCallback);
-    filtros.filtrarProcessos(data.processos, data.equipes, filtros.buscaAtiva, filtros.filtroEquipeAtivo, afterRenderCallback);
+  // 2. Re-renderiza a UI principal (filtros e cards)
+  const afterRenderCallback = filtros.afterRenderCallback;
 
-    abrirAlertaModal(`Equipe "${nome}" criada com sucesso!`);
-    novaEquipeInput.value = '';
+  filtros.inicializarFiltroEquipes(
+    data.processos,
+    data.equipes,
+    filtros.filtrarProcessos,
+    afterRenderCallback
+  );
+  filtros.filtrarProcessos(
+    data.processos,
+    data.equipes,
+    filtros.buscaAtiva,
+    filtros.filtroEquipeAtivo,
+    afterRenderCallback
+  );
+
+  abrirAlertaModal(`Equipe "${nome}" criada com sucesso!`);
+  novaEquipeInput.value = "";
 }
 
-function deletarEquipe(equipeId, data, filtros) {
-    const equipeIndex = data.equipes.findIndex(e => e.id === equipeId);
-    if (equipeIndex === -1) return;
+export function deletarEquipe(equipeId, data, filtros) {
+  const equipeIndex = data.equipes.findIndex((e) => e.id === equipeId);
+  if (equipeIndex === -1) return;
 
-    const equipeNome = data.equipes[equipeIndex].nome;
+  const equipeNome = data.equipes[equipeIndex].nome;
+  // 1. Remove os processos vinculados
+   data.processos.filter((p) => p.equipeId !== equipeId);
+  processarRetrocesso();
 
-    // 1. Remove os processos vinculados
-    data.processos = data.processos.filter(p => p.equipeId !== equipeId);
+  // 2. Remove a equipe
+  data.equipes.splice(equipeIndex, 1);
 
-    // 2. Remove a equipe
-    data.equipes.splice(equipeIndex, 1);
+  // 3. Re-renderiza a lista no modal
+  renderizarListaEquipes(data.equipes, data.processos);
 
-    // 3. Re-renderiza a lista no modal
-    renderizarListaEquipes(data.equipes, data.processos);
+  // 4. Re-renderiza a UI principal (filtros e cards)
+  const afterRenderCallback = filtros.afterRenderCallback;
 
-    // 4. Re-renderiza a UI principal (filtros e cards)
-    const afterRenderCallback = filtros.afterRenderCallback; 
-    
-    // Se a equipe deletada era a ativa, volta para 'todos'
-    if (filtros.filtroEquipeAtivo === equipeId) {
-        filtros.filtroEquipeAtivo = 'todos';
-    }
+  // Se a equipe deletada era a ativa, volta para 'todos'
+  if (filtros.filtroEquipeAtivo === equipeId) {
+    filtros.filtroEquipeAtivo = "todos";
+  }
 
-    filtros.inicializarFiltroEquipes(data.processos, data.equipes, filtros.filtrarProcessos, afterRenderCallback);
-    filtros.filtrarProcessos(data.processos, data.equipes, filtros.buscaAtiva, filtros.filtroEquipeAtivo, afterRenderCallback);
-    
-    abrirAlertaModal(`Equipe "${equipeNome}" excluída. ${data.processos.length} processos restantes.`);
+  filtros.inicializarFiltroEquipes(
+    data.processos,
+    data.equipes,
+    filtros.filtrarProcessos,
+    afterRenderCallback
+  );
+  filtros.filtrarProcessos(
+    data.processos,
+    data.equipes,
+    filtros.buscaAtiva,
+    filtros.filtroEquipeAtivo,
+    afterRenderCallback
+  );
+
+  abrirAlertaModal(
+    `Equipe "${equipeNome}" excluída. ${data.processos.length} processos restantes.`
+  );
 }
-
 
 // --- Funções de Renderização ---
 
 function renderizarListaEquipes(equipesArray, processosArray) {
-    if (!equipesListContainer) return;
-    equipesListContainer.innerHTML = '';
+  if (!equipesListContainer) return;
+  equipesListContainer.innerHTML = "";
 
-    equipesArray.forEach(equipe => {
-        const processoCount = processosArray.filter(p => p.equipeId === equipe.id).length;
-        
-        const li = document.createElement('li');
-        li.className = 'flex items-center justify-between p-3 border-b';
-        li.innerHTML = `
+  equipesArray.forEach((equipe) => {
+    const processoCount = processosArray.filter(
+      (p) => p.equipeId === equipe.id
+    ).length;
+
+    const li = document.createElement("li");
+    li.className = "flex items-center justify-between p-3 border-b";
+    li.innerHTML = `
             <div class="flex items-center gap-3">
                 <span class="w-4 h-4 rounded-full" style="background-color: ${equipe.cor};"></span>
                 <span class="font-semibold text-gray-800">${equipe.nome}</span>
@@ -169,6 +208,6 @@ function renderizarListaEquipes(equipesArray, processosArray) {
                 </svg>
             </button>
         `;
-        equipesListContainer.appendChild(li);
-    });
-}   
+    equipesListContainer.appendChild(li);
+  });
+}

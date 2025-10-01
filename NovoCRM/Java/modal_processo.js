@@ -4,8 +4,8 @@
 // MÓDULO: modal_processo.js
 // Lógica de controle do modal de edição/criação de processo.
 // --------------------------------------------------------------------------------
-
 import { abrirAlertaModal, exibirModalConfirmacao, abrirPromptModal } from './modal_alerta.js';
+import { deletarEquipe } from './modal_equipes.js';
 
 let modalProcesso, modalTituloInput, modalResponsavelInput, modalValorInput, modalStatusInput, modalPrioridadeInput;
 let modalProximaEquipeInput, saveModalProcessoBtn, closeModalProcessoBtn, deleteProcessBtn;
@@ -77,6 +77,7 @@ export function inicializarModalProcesso(data, filtros) {
         deleteProcessBtn.addEventListener('click', () => {
             exibirModalConfirmacao('Tem certeza que deseja excluir este processo permanentemente?', () => {
                 deletarProcesso(data, filtros);
+                
             });
         });
     }
@@ -236,7 +237,7 @@ function fecharModalProcesso() {
     }
 }
 
-function salvarProcesso(data, filtros) {
+export function salvarProcesso(data, filtros) {
     if (!validarCampos()) {
         abrirAlertaModal('Obrigatório: Preencha o Título do Processo e, se o Status for "Concluído", selecione a Próxima Equipe.');
         return;
@@ -315,7 +316,7 @@ function salvarProcesso(data, filtros) {
     );
 }
 
-function processarRetrocesso(motivo, data, filtros) {
+export function processarRetrocesso(motivo, data, filtros) {
     if (!processoSelecionadoId) return;
 
     let processo = data.processos.find(p => p.id === processoSelecionadoId);
@@ -356,10 +357,11 @@ function processarRetrocesso(motivo, data, filtros) {
     abrirAlertaModal(`Processo retrocedido para a equipe: ${data.obterNomeEquipe(equipeAnteriorId)}.`);
 }
 
-function deletarProcesso(data, filtros) {
+export function deletarProcesso(data, filtros) {
     if (!processoSelecionadoId) return;
-
+    
     const index = data.processos.findIndex(p => p.id === processoSelecionadoId);
+
     if (index !== -1) {
         const titulo = data.processos[index].titulo;
         data.processos.splice(index, 1);
@@ -379,3 +381,6 @@ function deletarProcesso(data, filtros) {
         abrirAlertaModal('Erro ao excluir processo.');
     }
 }
+
+
+export default modalProcesso
