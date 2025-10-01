@@ -4,7 +4,7 @@
     if (busca.trim()) {
         const termo = busca.trim().toLowerCase();
         processosFiltrados = processosFiltrados.filter(p => 
-            p.titulo.toLowerCase().includes(termo) ||
+            p.titulo.toLowerCase().includes(termo) ||               
             p.responsavel.toLowerCase().includes(termo) ||
             (p.retrocessoMotivo && p.retrocessoMotivo.toLowerCase().includes(termo))
         );

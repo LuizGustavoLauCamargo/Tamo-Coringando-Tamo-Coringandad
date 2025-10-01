@@ -1,4 +1,4 @@
-// ARQUIVO: kanban_ui_e_filtros.js (COMPLETO E CORRIGIDO - Valor)
+// ARQUIVO: kanban_ui_e_filtros.js (COMPLETO E FINALIZADO)
 
 let processosContainer, equipesFiltroContainer, buscaInput;
 
@@ -12,26 +12,30 @@ export function inicializarUI(data, modal, alerta, equipesModal, afterRenderCall
     processosContainer = document.getElementById('processosContainer');
     equipesFiltroContainer = document.getElementById('equipesFiltroContainer');
     buscaInput = document.getElementById('buscaInput');
-equipesFiltroContainer.style.display = 'flex';
-equipesFiltroContainer.style.gap = "20px"
+    
+    // Estilos de visualização dos filtros
+    equipesFiltroContainer.style.display = 'flex';
+    equipesFiltroContainer.style.gap = "20px"
+
     processosArrayGlobal = data.processos;
     equipesArrayGlobal = data.equipes;
 
-    // Passa o afterRenderCallback (adicionarListenerDeEdicao)
+    // Inicialização e Renderização
     inicializarFiltroEquipes(data.processos, data.equipes, filtrarProcessos, afterRenderCallback);
+    // Chamada inicial para popular o Kanban
     filtrarProcessos(data.processos, data.equipes, '', 'todos', afterRenderCallback);
 
-    // Eventos Globais (Certifique-se de que o afterRenderCallback está sendo passado onde necessário)
+    // Eventos Globais 
     if (document.getElementById('novoProcessoBtn')) {
         document.getElementById('novoProcessoBtn').addEventListener('click', () => {
-            // Passa o afterRenderCallback no objeto de referências para o ModalProcesso usar após salvar
+            // Passa o afterRenderCallback para o modal usar após salvar
             modal.abrirModalProcesso(data, { filtrarProcessos, filtroEquipeAtivo, buscaAtiva, afterRenderCallback }); 
         });
     }
 
     if (document.getElementById('gerenciarEquipesBtn')) {
         document.getElementById('gerenciarEquipesBtn').addEventListener('click', () => {
-             // Passa o afterRenderCallback no objeto de referências para o ModalEquipe usar após salvar
+             // Passa o afterRenderCallback para o modal usar após salvar
             equipesModal.abrirModalGerenciarEquipes(data, { inicializarFiltroEquipes, filtrarProcessos, filtroEquipeAtivo, buscaAtiva, afterRenderCallback });
         });
     }
@@ -51,11 +55,14 @@ export function inicializarFiltroEquipes(processosArray, equipesArray, callback,
 
     equipesFiltroContainer.innerHTML = ''; 
 
+    // Botão "Todas as Equipes"
     const totalCount = processosArray.length;
     equipesFiltroContainer.appendChild(criarBotaoFiltro('todos', 'Todas as Equipes', totalCount, '#374151', callback, afterRenderCallback));
 
+    // Botões individuais das equipes
     equipesArray.forEach(equipe => {
         const count = processosArray.filter(p => p.equipeId === equipe.id).length;
+        // Mostra o botão se houver processos OU se a equipe estiver ativa no filtro
         if (count > 0 || equipe.id === filtroEquipeAtivo) { 
              equipesFiltroContainer.appendChild(criarBotaoFiltro(equipe.id, equipe.nome, count, equipe.cor, callback, afterRenderCallback));
         }
@@ -86,6 +93,7 @@ function criarBotaoFiltro(id, nome, count, corHex, callback, afterRenderCallback
     button.addEventListener('click', () => {
         filtroEquipeAtivo = id;
         callback(processosArrayGlobal, equipesArrayGlobal, buscaAtiva, id, afterRenderCallback);
+        // Garante que o filtro visual seja atualizado
         inicializarFiltroEquipes(processosArrayGlobal, equipesArrayGlobal, callback, afterRenderCallback); 
     });
 
@@ -100,10 +108,12 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
 
     if (!processosContainer) return;
     
+    // 1. Filtragem por Equipe
     let processosFiltrados = equipeId === 'todos' 
         ? processosArray 
         : processosArray.filter(p => p.equipeId === equipeId);
 
+    // 2. Filtragem por Busca (Título, Responsável, Motivo Retrocesso)
     if (busca.trim()) {
         const termo = busca.trim().toLowerCase();
         processosFiltrados = processosFiltrados.filter(p => 
@@ -113,7 +123,10 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
         );
     }
 
+    // 3. Renderização dos cards
     renderizarProcessos(processosFiltrados, equipesArray); 
+    
+    // 4. CHAMADA CRÍTICA: Reativa os listeners de clique em todos os novos cards
     afterRenderCallback(); 
 }
 
@@ -121,7 +134,7 @@ export function filtrarProcessos(processosArray, equipesArray, busca = '', equip
 
 function renderizarProcessos(processosFiltrados, equipesArray) {
     if (!processosContainer) return;
-    processosContainer.innerHTML = ''; 
+    processosContainer.innerHTML = ''; // Limpa o Kanban (apaga cards antigos e seus listeners)
 
     const colunas = {
         pendente: { titulo: 'Pendentes', processos: [] },
@@ -139,6 +152,7 @@ function renderizarProcessos(processosFiltrados, equipesArray) {
         const colunaDiv = criarColunaKanban(coluna.titulo);
         const colunaBody = colunaDiv.querySelector('.coluna-body');
         
+        // Ordenação por prioridade
         coluna.processos.sort((a, b) => {
             const prioridades = ['urgente', 'alta', 'media', 'baixa'];
             return prioridades.indexOf(a.prioridade) - prioridades.indexOf(b.prioridade);
@@ -171,8 +185,8 @@ function criarCardProcesso(processo, equipesArray) {
     const equipeNome = obterNomeEquipe(processo.equipeId);
     const proximaEquipeNome = processo.proximaEquipeId ? obterNomeEquipe(processo.proximaEquipeId) : '';
     
-    // ✅ CORREÇÃO APLICADA: Remove a divisão por 100
-   const valorFormatado = processo.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); 
+    // Formatação de Valor Monerário Correta
+    const valorFormatado = (processo.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); 
     
     let prioridadeClasses = '';
     switch(processo.prioridade) {
@@ -188,12 +202,19 @@ function criarCardProcesso(processo, equipesArray) {
     card.style.borderLeftWidth = '6px';
     card.setAttribute('data-processo-id', processo.id);
 
+    // Verifica se há anexos para exibir o ícone
+    const temAnexos = processo.anexos && processo.anexos.length > 0;
+    const anexoIcone = temAnexos ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.586a6 6 0 108.486 8.486l6.586-6.586"/></svg>` : '';
+
     card.innerHTML = `
         <div class="flex justify-between items-start mb-2">
             <h3 class="font-bold text-gray-800 text-lg">${processo.titulo}</h3>
-            <span class="text-xs font-semibold py-1 px-3 rounded-full text-white ${prioridadeClasses}">
-                ${processo.prioridade.charAt(0).toUpperCase() + processo.prioridade.slice(1)}
-            </span>
+            <div class="flex items-center gap-2">
+                ${anexoIcone}
+                <span class="text-xs font-semibold py-1 px-3 rounded-full text-white ${prioridadeClasses}">
+                    ${processo.prioridade.charAt(0).toUpperCase() + processo.prioridade.slice(1)}
+                </span>
+            </div>
         </div>
         <p class="text-sm text-gray-500 mb-1">Responsável: <span class="font-medium text-gray-600">${processo.responsavel}</span></p>
         <p class="text-sm text-gray-500 mb-3">Valor: <span class="font-medium text-gray-600">${valorFormatado}</span></p>

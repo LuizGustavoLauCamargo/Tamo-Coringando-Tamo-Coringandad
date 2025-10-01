@@ -1,4 +1,4 @@
-// ARQUIVO: modal_processo.js (CORRIGIDO)
+// ARQUIVO: modal_processo.js (COMPLETO E FINALIZADO)
 
 // --------------------------------------------------------------------------------
 // MÓDULO: modal_processo.js
@@ -11,6 +11,9 @@ let modalProcesso, modalTituloInput, modalResponsavelInput, modalValorInput, mod
 let modalProximaEquipeInput, saveModalProcessoBtn, closeModalProcessoBtn, deleteProcessBtn;
 let extrasContainer, addExtraFieldBtn, retrocederBtn;
 let motivoRetrocessoContainer, motivoRetrocessoElement;
+
+// Variáveis para Anexos
+let anexarArquivoInput, listaDeAnexosContainer;
 
 let processoSelecionadoId = null;
 let elementoFocadoAnteriormente = null;
@@ -33,6 +36,10 @@ export function inicializarModalProcesso(data, filtros) {
     motivoRetrocessoContainer = document.getElementById('motivoRetrocessoContainer');
     motivoRetrocessoElement = document.getElementById('motivoRetrocesso');
     
+    // Captura dos elementos de anexo
+    anexarArquivoInput = document.getElementById('anexarArquivoInput');
+    listaDeAnexosContainer = document.getElementById('listaDeAnexosContainer');
+    
     // Formatação de valor (R$ 00,00)
     if (modalValorInput) {
         modalValorInput.addEventListener('input', formatarValorMonetario);
@@ -46,6 +53,11 @@ export function inicializarModalProcesso(data, filtros) {
     // Listeners
     if (closeModalProcessoBtn) closeModalProcessoBtn.addEventListener('click', fecharModalProcesso);
     if (addExtraFieldBtn) addExtraFieldBtn.addEventListener('click', () => adicionarCampoExtra({ nome: '', valor: '' }));
+    
+    // Listener para Anexo de Arquivos
+    if (anexarArquivoInput) {
+        anexarArquivoInput.addEventListener('change', exibirNomeArquivoSelecionado);
+    }
     
     if (document.getElementById('modalProcessoForm')) {
         document.getElementById('modalProcessoForm').addEventListener('submit', (e) => {
@@ -77,7 +89,6 @@ export function inicializarModalProcesso(data, filtros) {
         deleteProcessBtn.addEventListener('click', () => {
             exibirModalConfirmacao('Tem certeza que deseja excluir este processo permanentemente?', () => {
                 deletarProcesso(data, filtros);
-                
             });
         });
     }
@@ -86,10 +97,10 @@ export function inicializarModalProcesso(data, filtros) {
 // --- Funções Auxiliares ---
 
 function formatarValorMonetario(event) {
-    let value = event.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+    let value = event.target.value.replace(/\D/g, ''); 
     if (value.length > 0) {
-        value = (parseInt(value) / 100).toFixed(2); // Divide por 100 para adicionar 2 casas decimais
-        value = value.replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); // Formato R$ 0.000,00
+        value = (parseInt(value) / 100).toFixed(2); 
+        value = value.replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); 
     }
     event.target.value = value;
 }
@@ -108,7 +119,7 @@ function adicionarCampoExtra(extra) {
     if (!extrasContainer) return;
 
     const div = document.createElement('div');
-    div.className = 'flex gap-2 items-center';
+    div.className = 'flex gap-2 items-center extra-field-wrapper';
     div.innerHTML = `
         <input type="text" placeholder="Nome do Campo (ex: Versão)" value="${extra.nome}" class="campo-extra-nome block w-1/3 rounded-md border-gray-300 shadow-sm p-2 text-sm">
         <input type="text" placeholder="Valor" value="${extra.valor}" class="campo-extra-valor block w-2/3 rounded-md border-gray-300 shadow-sm p-2 text-sm">
@@ -117,20 +128,54 @@ function adicionarCampoExtra(extra) {
         </button>
     `;
 
-    // Adiciona listener de remoção
     div.querySelector('.remove-extra-btn')?.addEventListener('click', () => div.remove());
 
     extrasContainer.appendChild(div);
 }
 
+// Função para exibir arquivos selecionados
+function exibirNomeArquivoSelecionado() {
+    if (!anexarArquivoInput || !listaDeAnexosContainer) return;
+
+    listaDeAnexosContainer.innerHTML = ''; 
+    
+    if (anexarArquivoInput.files.length > 0) {
+        Array.from(anexarArquivoInput.files).forEach(file => {
+            renderizarAnexoSaved({ name: file.name, size: file.size });
+        });
+    }
+}
+
+// Função para renderizar anexos salvos (persiste entre aberturas)
+function renderizarAnexoSaved(anexo) {
+    if (!listaDeAnexosContainer) return;
+    
+    const fileElement = document.createElement('div');
+    fileElement.className = 'flex items-center justify-between mt-1 p-1 bg-gray-100 rounded text-xs';
+    fileElement.innerHTML = `
+        <span class="truncate text-gray-700">${anexo.name}</span>
+        <span class="ml-2 text-gray-500">(${formatBytes(anexo.size)})</span>
+    `;
+    listaDeAnexosContainer.appendChild(fileElement);
+}
+
+// Função auxiliar simples para formatar o tamanho do arquivo
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+
 function toggleProximaEquipeContainer(data) {
     const proximaEquipeContainer = document.getElementById('proximaEquipeContainer');
     if (!proximaEquipeContainer || !modalStatusInput || !modalProximaEquipeInput) return;
 
-    // Se o status for "Concluído", mostra a seleção da próxima equipe
     if (modalStatusInput.value === 'concluido') {
         proximaEquipeContainer.style.display = 'flex';
-        // Preenche as opções de equipes
         modalProximaEquipeInput.innerHTML = '<option value="">(Nenhuma)</option>';
         data.equipes.forEach(equipe => {
             const option = document.createElement('option');
@@ -140,7 +185,7 @@ function toggleProximaEquipeContainer(data) {
         });
     } else {
         proximaEquipeContainer.style.display = 'none';
-        modalProximaEquipeInput.value = ''; // Limpa o valor se for escondido
+        modalProximaEquipeInput.value = '';
     }
 }
 
@@ -156,7 +201,6 @@ function validarCampos() {
     }
 
     if (modalStatusInput && modalProximaEquipeInput) {
-        // Se status for 'concluido' E a próxima equipe for '(Nenhuma)', é inválido.
         if (modalStatusInput.value === 'concluido' && modalProximaEquipeInput.value === '') {
             modalProximaEquipeInput.classList.add('input-erro');
             isValid = false;
@@ -173,13 +217,16 @@ export function abrirModalProcesso(data, filtros, processoId = null) {
     processoSelecionadoId = processoId;
     if (!modalProcesso) return;
 
-    // Salva o elemento focado para restaurar depois
     elementoFocadoAnteriormente = document.activeElement;
 
     // 1. Limpar e configurar o modal
     document.getElementById('modalProcessoTitle').textContent = processoId ? 'Editar Processo' : 'Novo Processo';
     document.getElementById('modalProcessoForm').reset();
     extrasContainer.innerHTML = '';
+    
+    // CRÍTICO: LIMPAR ANEXOS E INPUT FILE
+    if (listaDeAnexosContainer) listaDeAnexosContainer.innerHTML = '';
+    if (anexarArquivoInput) anexarArquivoInput.value = null; 
     
     // Esconde/Mostra botões
     if (deleteProcessBtn) deleteProcessBtn.style.display = processoId ? 'inline-block' : 'none';
@@ -197,16 +244,19 @@ export function abrirModalProcesso(data, filtros, processoId = null) {
         modalTituloInput.value = processo.titulo || '';
         modalResponsavelInput.value = processo.responsavel || '';
         
-        // Formata o valor para exibição (R$ 0.000,00) - Corrigido para float/R$
-        // A formatação original (toFixed(2)...) está correta AQUI se o valor for float.
         modalValorInput.value = (processo.valor !== undefined) ? (processo.valor).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') : '';
         
         modalStatusInput.value = processo.status || 'pendente';
         modalPrioridadeInput.value = processo.prioridade || 'media';
-        document.getElementById('modalEquipeHidden').value = processo.equipeId; // Guarda a equipe atual
+        document.getElementById('modalEquipeHidden').value = processo.equipeId;
         
         // Extras
         (processo.extras || []).forEach(adicionarCampoExtra);
+        
+        // Renderizar anexos SALVOS
+        if (processo.anexos && processo.anexos.length > 0) {
+            processo.anexos.forEach(renderizarAnexoSaved);
+        }
         
         // Retrocesso
         if (processo.retrocedido && processo.retrocessoMotivo && motivoRetrocessoContainer) {
@@ -214,10 +264,8 @@ export function abrirModalProcesso(data, filtros, processoId = null) {
             motivoRetrocessoElement.textContent = processo.retrocessoMotivo;
         }
     } else {
-        // Processo novo: pega a equipe do filtro ativo, se houver
         equipeAtualId = filtros.filtroEquipeAtivo === 'todos' ? data.equipes[0]?.id || '' : filtros.filtroEquipeAtivo;
         document.getElementById('modalEquipeHidden').value = equipeAtualId;
-        // Adiciona um campo extra vazio se for novo
         adicionarCampoExtra({ nome: '', valor: '' });
     }
     
@@ -230,28 +278,26 @@ export function abrirModalProcesso(data, filtros, processoId = null) {
 function fecharModalProcesso() {
     if (modalProcesso) {
         modalProcesso.style.display = 'none';
-        // Restaura o foco para o elemento anterior (por exemplo, o botão Novo Processo)
         if (elementoFocadoAnteriormente && elementoFocadoAnteriormente.focus) {
             elementoFocadoAnteriormente.focus();
         }
     }
 }
 
-export function salvarProcesso(data, filtros) {
+function salvarProcesso(data, filtros) {
     if (!validarCampos()) {
         abrirAlertaModal('Obrigatório: Preencha o Título do Processo e, se o Status for "Concluído", selecione a Próxima Equipe.');
         return;
     }
 
     const isNew = processoSelecionadoId === null;
-    let processo = isNew ? { id: 'p' + (Date.now()), historicoEquipes: [] } : data.processos.find(p => p.id === processoSelecionadoId);
+    let processo = isNew ? { id: 'p' + (Date.now()), historicoEquipes: [], anexos: [] } : data.processos.find(p => p.id === processoSelecionadoId);
 
     if (!processo) {
         abrirAlertaModal('Erro ao encontrar o processo para salvar.');
         return;
     }
 
-    // Converte o valor monetário de volta para float (em Reais)
     const valorMonetario = modalValorInput.value.replace(/\./g, '').replace(',', '.');
     const valorFloat = parseFloat(valorMonetario) || 0;
     const equipeAtualId = document.getElementById('modalEquipeHidden').value;
@@ -259,23 +305,37 @@ export function salvarProcesso(data, filtros) {
     // 1. Coleta de dados
     processo.titulo = modalTituloInput.value.trim();
     processo.responsavel = modalResponsavelInput.value.trim();
-    // Salva o valor como float arredondado para duas casas decimais
     processo.valor = Math.round(valorFloat * 100) / 100; 
     processo.status = modalStatusInput.value;
     processo.prioridade = modalPrioridadeInput.value;
-    processo.extras = Array.from(extrasContainer.children).map(div => ({
+    
+    // Coleta de Campos Extras
+    processo.extras = Array.from(extrasContainer.querySelectorAll('.extra-field-wrapper')).map(div => ({
         nome: div.querySelector('.campo-extra-nome')?.value.trim() || '',
         valor: div.querySelector('.campo-extra-valor')?.value.trim() || ''
     })).filter(extra => extra.nome && extra.valor);
+    
+    // Lógica de persistência de arquivos
+    if (anexarArquivoInput && anexarArquivoInput.files.length > 0) {
+        // Se novos arquivos foram selecionados, SOBRESCREVE a lista
+        processo.anexos = Array.from(anexarArquivoInput.files).map(file => ({
+            name: file.name,
+            size: file.size,
+        }));
+    } else if (isNew) {
+        // Se for novo processo e não tem arquivo, inicializa vazio
+        processo.anexos = [];
+    }
+    // Se for edição e nenhum arquivo for selecionado, processo.anexos mantém o valor anterior, 
+    // garantindo a persistência.
 
     // 2. Lógica de transição/equipe
     const proximaEquipe = modalProximaEquipeInput.value;
 
     if (processo.status === 'concluido' && proximaEquipe) {
-        // Se concluído e tem próxima equipe: move o processo
         processo.equipeId = proximaEquipe;
-        processo.status = 'pendente'; // Reseta para pendente na nova equipe
-        processo.proximaEquipeId = ''; // Limpa a próxima equipe
+        processo.status = 'pendente';
+        processo.proximaEquipeId = '';
         
         if (!processo.historicoEquipes.includes(proximaEquipe)) {
             processo.historicoEquipes.push(proximaEquipe);
@@ -286,7 +346,6 @@ export function salvarProcesso(data, filtros) {
         
         abrirAlertaModal(`Processo concluído e enviado para a equipe: ${data.obterNomeEquipe(proximaEquipe)}!`);
     } else {
-        // Se não houver mudança de equipe, garante que a equipeId seja a atual
         processo.equipeId = equipeAtualId;
         processo.proximaEquipeId = proximaEquipe; 
         if (!processo.historicoEquipes.includes(equipeAtualId)) {
@@ -306,13 +365,13 @@ export function salvarProcesso(data, filtros) {
     // 4. Fechar modal e renderizar
     fecharModalProcesso();
     
-    // ✅ CORREÇÃO APLICADA: Chama filtrarProcessos com 5 argumentos (o afterRenderCallback é o 5º)
+    // Chama filtrarProcessos com 5 argumentos para garantir a re-anexação dos listeners!
     filtros.filtrarProcessos(
         data.processos, 
         data.equipes, 
         filtros.buscaAtiva, 
         filtros.filtroEquipeAtivo,
-        filtros.afterRenderCallback // Argumento crucial para re-anexar listeners!
+        filtros.afterRenderCallback
     );
 }
 
@@ -322,7 +381,6 @@ export function processarRetrocesso(motivo, data, filtros) {
     let processo = data.processos.find(p => p.id === processoSelecionadoId);
     if (!processo) return;
 
-    // Encontra a equipe anterior no histórico
     const equipeAtual = processo.equipeId;
     const historicoIndex = processo.historicoEquipes.indexOf(equipeAtual);
     const equipeAnteriorId = historicoIndex > 0 ? processo.historicoEquipes[historicoIndex - 1] : null;
@@ -345,13 +403,13 @@ export function processarRetrocesso(motivo, data, filtros) {
     // 3. Fechar modal e renderizar
     fecharModalProcesso();
     
-    // ✅ CORREÇÃO APLICADA: Chama filtrarProcessos com 5 argumentos
+    // Chama filtrarProcessos com 5 argumentos para re-anexar listeners
     filtros.filtrarProcessos(
         data.processos, 
         data.equipes, 
         filtros.buscaAtiva, 
         filtros.filtroEquipeAtivo,
-        filtros.afterRenderCallback // Argumento crucial!
+        filtros.afterRenderCallback
     );
     
     abrirAlertaModal(`Processo retrocedido para a equipe: ${data.obterNomeEquipe(equipeAnteriorId)}.`);
@@ -367,13 +425,13 @@ export function deletarProcesso(data, filtros) {
         data.processos.splice(index, 1);
         fecharModalProcesso();
         
-        // ✅ CORREÇÃO APLICADA: Chama filtrarProcessos com 5 argumentos
+        // Chama filtrarProcessos com 5 argumentos para re-anexar listeners
         filtros.filtrarProcessos(
             data.processos, 
             data.equipes, 
             filtros.buscaAtiva, 
             filtros.filtroEquipeAtivo,
-            filtros.afterRenderCallback // Argumento crucial!
+            filtros.afterRenderCallback
         );
         
         abrirAlertaModal(`Processo "${titulo}" excluído com sucesso!`);
