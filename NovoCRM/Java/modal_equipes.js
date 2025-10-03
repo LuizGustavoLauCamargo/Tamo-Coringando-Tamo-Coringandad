@@ -44,7 +44,7 @@ export function inicializarModalEquipe(data, UI) {
       salvarNovaEquipe(dataRefs, uiRefs);
     });
   }
-
+const card = document.querySelector('.processo-card')
   // Listener para o clique no botão de excluir equipe (usa delegação)
   if (equipesListContainer) {
 

@@ -66,3 +66,7 @@ function configurarListenerCard(data, filtros) {
 
 // Inicia a aplicação quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', inicializarApp);
+
+const darkMode = document.querySelector('body')
+
+
