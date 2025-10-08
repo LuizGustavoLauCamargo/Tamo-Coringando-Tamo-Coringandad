@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+:root {
+  --primary-color: #093054;
+  --secondary-color: #ffffff;
+--accent-color: #349af3; /* tom para fundo leve */
+  --input-focus-color: #ffffff;
+}
+
+body {
+  background: rgba(0,0,0,0.2) url('https://mclaren.scene7.com/is/image/mclaren/Senna-GTR-Extreme-1200x1200:crop-4x3?wid=1920&hei=1440') center/cover no-repeat fixed;
+}
+
+a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.login-wrapper {
+  position: relative;
+  padding: 4rem 1.5rem 2rem 1.5rem;
+  max-width: 380px;
+  width: 100%;
+  border: 2px solid var(--primary-color);
+  border-radius: 15px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 10px 2px rgba(0,0,0,0.2);
+  color: var(--secondary-color);
+}
+
+.login-header {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1.5rem;
+  background-color: var(--primary-color);
+  color: black;
+  font-size: clamp(1.2rem, 6vw, 2rem);
+  border-radius: 0 0 20px 20px;
+  text-align: center;
+}
+
+.login-header::before,
+.login-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-top-left-radius: 50%;
+  background: transparent;
+}
+
+.login-header::before {
+  left: -30px;
+  box-shadow: 15px 0 0 0 var(--primary-color);
+}
+
+.login-header::after {
+  right: -30px;
+  box-shadow: -15px 0 0 0 var(--primary-color);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  gap: 1rem;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  border: 2px solid var(--primary-color);
+  border-radius: 30px;
+  background: transparent;
+  color: var(--secondary-color);
+  font-size: 1rem;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.input-field:focus {
+  border-color: var(--secondary-color);
+  background-color: rgba(255,255,255,0.1);
+}
+
+.label {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+  pointer-events: none;
+  transition: top 0.3s, font-size 0.3s, background-color 0.3s;
+  padding: 0 8px;
+}
+
+.input-field:focus + .label,
+.input-field:not(:placeholder-shown) + .label {
+  top: -0.6rem;
+  font-size: 0.8rem;
+  color: black;
+  background-color: var(--primary-color);
+}
+
+.icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+}
+
+.icon.toggle-password {
+  right: 45px;
+  cursor: pointer;
+}
+
+.input-wrapper .bx-lock-alt {
+  right: 22px; /* ajustar para não sobrepor toggle */
+}
+
+.input-wrapper .bx-user {
+  right: 1rem;
+}
+
+.login-check {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.forgot {
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+}
+
+.input-login {
+  width: 100%;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 30px;
+  background: var(--accent-color);
+  color: #000;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.input-login:hover {
+  background: var(--secondary-color);
+}
+
+.register {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.register a {
+  font-weight: 500;
+  color: var(--secondary-color);
+}
+
+@media (max-width: 400px) {
+  .login-wrapper {
+    padding: 3rem 1rem 2rem;
+  }
+  .input-login {
+    font-size: 1rem;
+  }
+}

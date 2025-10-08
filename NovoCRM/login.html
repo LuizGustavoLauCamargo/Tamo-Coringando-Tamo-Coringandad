@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Registrar</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/CSS/stylesLogin.css">
+</head>
+<body>
+  <div class="wrapper">
+    <div class="login-wrapper">
+      <div class="login-header" id="form-title">Login</div>
+      <form class="login-form" id="auth-form" action="#" method="post">
+        <div class="input-wrapper">
+          <input type="text" id="user" class="input-field" placeholder=" " required>
+          <label for="user" class="label">Usuário</label>
+          <i class="bx bx-user icon"></i>
+        </div>
+        <div class="input-wrapper">
+          <input type="password" id="pw" class="input-field" placeholder=" " required>
+          <label for="pw" class="label">Senha</label>
+          <i class="bx bx-lock-alt icon"></i>
+          <i class="bx bx-show toggle-password icon" id="togglePw"></i>
+        </div>
+        <div class="login-check">
+          <div class="remember">
+            <input type="checkbox" id="remember-me">
+            <label for="remember-me">Lembrar deste usuário</label>
+          </div>
+          <div class="forgot">
+            <a href="#">Esqueceu a senha?</a>
+          </div>
+          <div class="input-wrapper">
+            <input type="submit" class="input-login" value="Entrar">
+          </div>
+        </div>
+        <div class="register">
+          <p>
+            Não tem uma conta?
+            <a href="#" id="toggle-form">Registrar</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="/Java/login.js"></script>
+</body>
+</html>

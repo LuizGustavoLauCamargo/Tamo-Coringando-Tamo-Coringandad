@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+
 }
 
 datasource db {
@@ -17,7 +17,9 @@ datasource db {
 //modelo que vai ser usado no nosso banco de dados, isso é só um exemplo
 
 model Equipe {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  nome String
+  id    String @id @default(auto()) @map("_id") @db.ObjectId //id da equipe
+  nome String 
+ 
   criadoEm DateTime
+  
 }
