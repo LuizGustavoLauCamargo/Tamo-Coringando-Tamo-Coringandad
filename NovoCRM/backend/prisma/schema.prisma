@@ -1,12 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+
 }
 
 datasource db {
@@ -14,10 +11,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//modelo que vai ser usado no nosso banco de dados, isso é só um exemplo
-
+// Model para as equipes do seu Kanban
 model Equipe {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  nome String
-  criadoEm DateTime
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  nome      String
+  cor       String
+  processos Processo[] @relation("ProcessoEquipe") // Relacionamento com os processos da equipe atual
+  proximosProcessos Processo[] @relation("ProximaEquipe") // Relacionamento com os processos onde esta equipe é a próxima
+  criadoEm  DateTime   @default(now())
+}
+
+// Model principal para os processos (cards do Kanban)
+model Processo {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  titulo            String
+  responsavel       String?
+  valor             Float?
+  status            String   @default("pendente") // pendente, em_andamento, concluido
+  prioridade        String   @default("media")  // urgente, alta, media, baixa
+  retrocedido       Boolean? @default(false)
+  retrocessoMotivo  String?
+  extras            Extra[] // Array de campos extras, embutido no documento
+  anexos            Anexo[] // Array de anexos, embutido no documento
+  historicoEquipes  String[] @db.ObjectId // Array com os IDs das equipes pelas quais o processo passou
+
+  // Relacionamento com a equipe atual
+  equipeId          String   @db.ObjectId
+  equipe            Equipe   @relation("ProcessoEquipe", fields: [equipeId], references: [id])
+
+  // Relacionamento com a próxima equipe (opcional)
+  proximaEquipeId   String?  @db.ObjectId
+  proximaEquipe     Equipe?  @relation("ProximaEquipe", fields: [proximaEquipeId], references: [id])
+
+  criadoEm          DateTime @default(now())
+  atualizadoEm      DateTime @updatedAt
+}
+
+// Tipo customizado para os campos extras, que será embutido no model Processo
+type Extra {
+  nome  String
+  valor String
+}
+
+// Tipo customizado para os anexos, que será embutido no model Processo
+type Anexo {
+  nome    String
+  tamanho Float
 }
