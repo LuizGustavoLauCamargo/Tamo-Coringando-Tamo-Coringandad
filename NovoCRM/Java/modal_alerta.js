@@ -61,6 +61,7 @@ export function fecharConfirmacaoModal() {
         promptInput.style.display = 'none';
         promptInput.value = '';
     }
+ 
 }
 
 

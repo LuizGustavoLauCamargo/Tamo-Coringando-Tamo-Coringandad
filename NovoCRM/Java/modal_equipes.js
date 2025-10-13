@@ -44,12 +44,15 @@ export function inicializarModalEquipe(data, UI) {
       salvarNovaEquipe(dataRefs, uiRefs);
     });
   }
-const card = document.querySelector('.processo-card')
+
+// const card = document.querySelector('.processo-card')
+//esse é card que deveria ser excluido 
   // Listener para o clique no botão de excluir equipe (usa delegação)
   if (equipesListContainer) {
 
     equipesListContainer.addEventListener("click", (e) => {
       const deleteBtn = e.target.closest(".delete-equipe-btn");
+      
       if (deleteBtn) {
         const equipeId = deleteBtn.getAttribute("data-equipe-id");
         const processoCount = deleteBtn.getAttribute("data-processo-count");
@@ -62,7 +65,6 @@ const card = document.querySelector('.processo-card')
   }
   
 }
-
 
 
 export function abrirModalGerenciarEquipes(data, UIReferences) {
