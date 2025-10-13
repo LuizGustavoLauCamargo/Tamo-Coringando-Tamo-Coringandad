@@ -145,27 +145,41 @@ export function salvarNovaEquipe(data, filtros) {
 
 export function deletarEquipe(equipeId, data, filtros) {
   const equipeIndex = data.equipes.findIndex((e) => e.id === equipeId);
-  if (equipeIndex === -1) return;
+  if (equipeIndex === -1) {
+    abrirAlertaModal("Erro: Equipe não encontrada.");
+    return;
+  }
 
   const equipeNome = data.equipes[equipeIndex].nome;
-  // 1. Remove os processos vinculados
-  data.processos.filter((p) => p.equipeId !== equipeId);
-  processarRetrocesso();
+  const processosAntes = data.processos.length;
 
-  // 2. Remove a equipe
+  // 1. Remove os processos vinculados à equipe que será excluída.
+  // A forma correta é reatribuir o array com os itens filtrados.
+  const processosRestantes = data.processos.filter((p) => p.equipeId !== equipeId);
+  
+  // Limpa o array original e adiciona os processos restantes.
+  // Isso garante que a referência do array importado seja atualizada em toda a aplicação.
+  data.processos.length = 0;
+  data.processos.push(...processosRestantes);
+
+  const processosRemovidos = processosAntes - data.processos.length;
+
+  // 2. Remove a equipe do array de equipes.
   data.equipes.splice(equipeIndex, 1);
 
-  // 3. Re-renderiza a lista no modal
+  // 3. Re-renderiza a lista de equipes dentro do modal.
+  // Esta linha é a chave para que o item "suma" da tela após a exclusão.
   renderizarListaEquipes(data.equipes, data.processos);
 
-  // 4. Re-renderiza a UI principal (filtros e cards)
+  // 4. Re-renderiza a UI principal (filtros e o quadro Kanban).
   const afterRenderCallback = filtros.afterRenderCallback;
 
-  // Se a equipe deletada era a ativa, volta para 'todos'
+  // Se a equipe deletada era a ativa, volta o filtro para 'todos'.
   if (filtros.filtroEquipeAtivo === equipeId) {
     filtros.filtroEquipeAtivo = "todos";
   }
 
+  // Atualiza os filtros e o quadro para refletir a remoção da equipe e seus processos.
   filtros.inicializarFiltroEquipes(
     data.processos,
     data.equipes,
@@ -181,10 +195,9 @@ export function deletarEquipe(equipeId, data, filtros) {
   );
 
   abrirAlertaModal(
-    `Equipe "${equipeNome}" excluída. ${data.processos.length} processos restantes.`
+    `Equipe "${equipeNome}" e seus ${processosRemovidos} processos foram excluídos.`
   );
 }
-
 // --- Funções de Renderização ---
 
 function renderizarListaEquipes(equipesArray, processosArray) {
