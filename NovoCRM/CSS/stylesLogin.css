@@ -8,14 +8,14 @@
 }
 
 :root {
-  --primary-color: #093054;
+  --primary-color: #327cc2;
   --secondary-color: #ffffff;
 --accent-color: #349af3; /* tom para fundo leve */
   --input-focus-color: #ffffff;
 }
 
 body {
-  background: rgba(0,0,0,0.2) url('https://mclaren.scene7.com/is/image/mclaren/Senna-GTR-Extreme-1200x1200:crop-4x3?wid=1920&hei=1440') center/cover no-repeat fixed;
+  background: rgba(97, 91, 91, 0.2) url('') center/cover no-repeat fixed;
 }
 
 a {
