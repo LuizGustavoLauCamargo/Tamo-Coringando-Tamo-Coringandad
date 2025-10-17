@@ -10,12 +10,18 @@
 :root {
   --primary-color: #327cc2;
   --secondary-color: #ffffff;
---accent-color: #349af3; /* tom para fundo leve */
+  --accent-color: #349af3;
+  /* tom para fundo leve */
   --input-focus-color: #ffffff;
 }
 
 body {
-  background: rgba(97, 91, 91, 0.2) url('') center/cover no-repeat fixed;
+  background: rgba(97, 91, 91, 0.2) url('../assets/logoVox.jpg') center/cover no-repeat fixed;
+  object-fit: cover;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  opacity:1;
 }
 
 a {
@@ -44,8 +50,10 @@ a:hover {
   border: 2px solid var(--primary-color);
   border-radius: 15px;
   backdrop-filter: blur(20px);
-  box-shadow: 0 0 10px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.2);
   color: var(--secondary-color);
+  background-color: #484545;
+  opacity: 0.9;
 }
 
 .login-header {
@@ -106,7 +114,7 @@ a:hover {
 
 .input-field:focus {
   border-color: var(--secondary-color);
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .label {
@@ -120,8 +128,8 @@ a:hover {
   padding: 0 8px;
 }
 
-.input-field:focus + .label,
-.input-field:not(:placeholder-shown) + .label {
+.input-field:focus+.label,
+.input-field:not(:placeholder-shown)+.label {
   top: -0.6rem;
   font-size: 0.8rem;
   color: black;
@@ -142,7 +150,8 @@ a:hover {
 }
 
 .input-wrapper .bx-lock-alt {
-  right: 22px; /* ajustar para não sobrepor toggle */
+  right: 22px;
+  /* ajustar para não sobrepor toggle */
 }
 
 .input-wrapper .bx-user {
@@ -198,6 +207,7 @@ a:hover {
   .login-wrapper {
     padding: 3rem 1rem 2rem;
   }
+
   .input-login {
     font-size: 1rem;
   }
